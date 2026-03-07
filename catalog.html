@@ -42,6 +42,10 @@
 
   <!-- Catalog -->
   <div class="container">
+    <button class="filter-toggle-btn" id="filterToggle" onclick="document.querySelector('.catalog-sidebar').classList.toggle('open'); this.querySelector('.filter-arrow').classList.toggle('rotated');">
+      <span>Фильтры</span>
+      <span class="filter-arrow">▼</span>
+    </button>
     <div class="catalog-layout">
       <!-- Sidebar Filters -->
       <aside class="catalog-sidebar">
