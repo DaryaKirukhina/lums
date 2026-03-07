@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Контакты — ЛЮМС</title>
+  <meta name="description" content="Свяжитесь с нами — ЛЮМС, интернет-магазин натуральных свечей ручной работы.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .contacts-hero {
+      padding-top: 120px;
+      padding-bottom: 60px;
+      text-align: center;
+    }
+    .contacts-hero h1 {
+      margin-bottom: 12px;
+    }
+    .contacts-hero p {
+      color: var(--gray);
+      font-size: 1.05rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .contacts-blocks {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 60px;
+    }
+    .contact-block {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      text-align: center;
+      transition: transform var(--transition);
+    }
+    .contact-block:hover {
+      transform: translateY(-4px);
+    }
+    .contact-block-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--orchid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin: 0 auto 16px;
+    }
+    .contact-block h3 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+    .contact-block p {
+      color: var(--gray);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .contact-block a {
+      color: var(--coral);
+      font-weight: 500;
+    }
+    .contact-block a:hover {
+      text-decoration: underline;
+    }
+    .contacts-form-section {
+      max-width: 600px;
+      margin: 0 auto 80px;
+    }
+    .contacts-form-section h2 {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .contacts-form-section > p {
+      text-align: center;
+      color: var(--gray);
+      margin-bottom: 32px;
+      font-size: 0.95rem;
+    }
+    .contacts-form-section .contact-form {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+    }
+    .contacts-form-section .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .contacts-form-section .form-group {
+      margin-bottom: 16px;
+    }
+    .contacts-form-section .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .contacts-form-section .form-group input,
+    .contacts-form-section .form-group select,
+    .contacts-form-section .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid rgba(0,0,0,0.08);
+      border-radius: var(--radius);
+      transition: border-color var(--transition);
+      background: var(--vanilla);
+    }
+    .contacts-form-section .form-group input:focus,
+    .contacts-form-section .form-group select:focus,
+    .contacts-form-section .form-group textarea:focus {
+      border-color: var(--coral);
+    }
+    .contacts-form-section textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    .contacts-legal {
+      text-align: center;
+      padding: 40px 0;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      margin-bottom: 0;
+    }
+    .contacts-legal p {
+      font-size: 0.8rem;
+      color: var(--gray);
+      line-height: 1.6;
+    }
+    @media (max-width: 768px) {
+      .contacts-blocks {
+        grid-template-columns: 1fr;
+      }
+      .contacts-form-section .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">ЛЮМС</a>
+      <nav class="nav" id="nav">
+        <a href="index.html">Главная</a>
+        <a href="catalog.html">Каталог</a>
+        <a href="about.html">О нас</a>
+        <a href="contacts.html" class="active">Контакты</a>
+      </nav>
+      <div class="header-actions">
+        <a href="cart.html" class="cart-link" aria-label="Корзина">
+          🛒
+          <span class="cart-count" id="cartCount" style="display:none;">0</span>
+        </a>
+        <div class="burger" id="burger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="contacts-hero">
+    <div class="container">
+      <h1>Свяжитесь с нами</h1>
+      <p>Будем рады ответить на любые вопросы о наших свечах, доставке или сотрудничестве</p>
+    </div>
+  </section>
+
+  <!-- Contact Blocks -->
+  <section>
+    <div class="container">
+      <div class="contacts-blocks">
+        <div class="contact-block">
+          <div class="contact-block-icon">📞</div>
+          <h3>Телефон</h3>
+          <p><a href="tel:+79058445098">+7 (905) 844-50-98</a></p>
+          <p>Пн-Пт 10:00 — 20:00<br>Сб-Вс 11:00 — 18:00</p>
+        </div>
+        <div class="contact-block">
+          <div class="contact-block-icon">✉️</div>
+          <h3>Email</h3>
+          <p><a href="mailto:hello@lums.ru">hello@lums.ru</a></p>
+          <p>Ответим в течение 24 часов</p>
+        </div>
+        <div class="contact-block">
+          <div class="contact-block-icon">💬</div>
+          <h3>Мессенджеры</h3>
+          <p>Напишите нам в Telegram<br>или WhatsApp</p>
+          <p><a href="https://t.me/">Написать в Telegram</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form -->
+  <section class="contacts-form-section">
+    <h2>Напишите нам</h2>
+    <p>Заполните форму и мы свяжемся с вами в ближайшее время</p>
+    <div class="contact-form">
+      <form id="contactForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Имя</label>
+            <input type="text" id="name" name="name" placeholder="Ваше имя" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="email@example.com" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="subject">Тема</label>
+          <select id="subject" name="subject">
+            <option value="product">Вопрос о товаре</option>
+            <option value="delivery">Доставка</option>
+            <option value="cooperation">Сотрудничество</option>
+            <option value="other">Другое</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="message">Сообщение</label>
+          <textarea id="message" name="message" placeholder="Ваше сообщение..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Отправить</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Legal Info -->
+  <div class="container">
+    <div class="contacts-legal">
+      <p>Самозанятая Кирюхина Дарья Олеговна<br>ИНН 561443012986</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">ЛЮМС</a>
+          <p>Натуральные свечи ручной работы. Создаём уют и атмосферу в каждом доме с 2026 года.</p>
+          <p style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:12px;">Самозанятая Кирюхина Дарья Олеговна<br>ИНН 561443012986</p>
+        </div>
+        <div>
+          <h4>Каталог</h4>
+          <ul>
+            <li><a href="catalog.html?category=aromatic">Ароматические</a></li>
+            <li><a href="catalog.html?category=decorative">Декоративные</a></li>
+            <li><a href="catalog.html?category=gift">Подарочные</a></li>
+            <li><a href="catalog.html?category=interior">Для интерьера</a></li>
+            <li><a href="catalog.html?category=seasonal">Сезонные</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Информация</h4>
+          <ul>
+            <li><a href="about.html">О нас</a></li>
+            <li><a href="contacts.html">Контакты</a></li>
+            <li><a href="#">Доставка и оплата</a></li>
+            <li><a href="#">Обмен и возврат</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Контакты</h4>
+          <ul>
+            <li><a href="tel:+79058445098">+7 (905) 844-50-98</a></li>
+            <li><a href="mailto:hello@lums.ru">hello@lums.ru</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 ЛЮМС. Все права защищены.</p>
+        <div class="footer-bottom-links">
+          <a href="privacy.html">Политика конфиденциальности</a>
+          <a href="terms.html">Пользовательское соглашение</a>
+          <a href="cookies.html">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cookie Banner -->
+  <div class="cookie-banner" id="cookieBanner">
+    <div class="cookie-banner-inner">
+      <p>Мы используем файлы cookie для улучшения работы сайта. Продолжая использование, вы соглашаетесь с нашей <a href="cookies.html">политикой cookies</a>.</p>
+      <div class="cookie-banner-actions">
+        <button class="btn btn-citrus btn-sm" onclick="acceptCookies()">Принять</button>
+        <button class="btn btn-outline btn-sm" onclick="declineCookies()">Отклонить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification -->
+  <div class="notification" id="notification"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    document.getElementById('contactForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        subject: document.getElementById('subject').value,
+        message: document.getElementById('message').value
+      };
+      await saveContactMessage(formData);
+      showNotification('Сообщение отправлено! Мы свяжемся с вами в ближайшее время.', 'success');
+      this.reset();
+    });
+  </script>
+</body>
+</html>

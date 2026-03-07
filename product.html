@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Товар — ЛЮМС</title>
+  <meta name="description" content="ЛЮМС — интернет-магазин натуральных свечей ручной работы.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">ЛЮМС</a>
+      <nav class="nav" id="nav">
+        <a href="index.html">Главная</a>
+        <a href="catalog.html">Каталог</a>
+        <a href="about.html">О нас</a>
+        <a href="contacts.html">Контакты</a>
+      </nav>
+      <div class="header-actions">
+        <a href="cart.html" class="cart-link" aria-label="Корзина">
+          🛒
+          <span class="cart-count" id="cartCount" style="display:none;">0</span>
+        </a>
+        <div class="burger" id="burger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Product Detail -->
+  <section class="product-detail">
+    <div class="container">
+      <div class="product-detail-grid">
+        <!-- Gallery -->
+        <div class="product-gallery">
+          <div class="product-gallery-main">
+            <div class="placeholder" id="productMainImage">🕯️</div>
+          </div>
+          <div class="product-gallery-thumbs" id="productThumbs"></div>
+        </div>
+
+        <!-- Info -->
+        <div class="product-info">
+          <h1 id="productName"></h1>
+          <p class="product-category" id="productCategory"></p>
+          <p class="product-aroma-detail" id="productAroma"></p>
+          <p class="product-price-big" id="productPrice"></p>
+          <p class="product-stock" id="productStock"></p>
+          <p class="product-description" id="productDescription"></p>
+
+          <dl class="product-specs">
+            <dt>Состав</dt>
+            <dd id="specComposition"></dd>
+            <dt>Вес</dt>
+            <dd id="specWeight"></dd>
+            <dt>Время горения</dt>
+            <dd id="specBurnTime"></dd>
+          </dl>
+
+          <div class="quantity-selector">
+            <button class="qty-btn" id="qtyMinus" aria-label="Уменьшить количество">-</button>
+            <input type="number" id="qtyInput" value="1" min="1" max="99" readonly>
+            <button class="qty-btn" id="qtyPlus" aria-label="Увеличить количество">+</button>
+          </div>
+
+          <div class="product-actions">
+            <button class="btn btn-primary" id="addToCartBtn">Добавить в корзину</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Related Products -->
+  <section id="relatedProducts">
+    <div class="container">
+      <div class="section-title">
+        <span>Рекомендации</span>
+        <h2>Вам может понравиться</h2>
+      </div>
+      <div class="products-grid" id="relatedGrid"></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">ЛЮМС</a>
+          <p>Натуральные свечи ручной работы. Создаём уют и атмосферу в каждом доме с 2026 года.</p>
+          <p style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:12px;">Самозанятая Кирюхина Дарья Олеговна<br>ИНН 561443012986</p>
+        </div>
+        <div>
+          <h4>Каталог</h4>
+          <ul>
+            <li><a href="catalog.html?category=aromatic">Ароматические</a></li>
+            <li><a href="catalog.html?category=decorative">Декоративные</a></li>
+            <li><a href="catalog.html?category=gift">Подарочные</a></li>
+            <li><a href="catalog.html?category=interior">Для интерьера</a></li>
+            <li><a href="catalog.html?category=seasonal">Сезонные</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Информация</h4>
+          <ul>
+            <li><a href="about.html">О нас</a></li>
+            <li><a href="contacts.html">Контакты</a></li>
+            <li><a href="#">Доставка и оплата</a></li>
+            <li><a href="#">Обмен и возврат</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Контакты</h4>
+          <ul>
+            <li><a href="tel:+79058445098">+7 (905) 844-50-98</a></li>
+            <li><a href="mailto:hello@lums.ru">hello@lums.ru</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 ЛЮМС. Все права защищены.</p>
+        <div class="footer-bottom-links">
+          <a href="privacy.html">Политика конфиденциальности</a>
+          <a href="terms.html">Пользовательское соглашение</a>
+          <a href="cookies.html">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cookie Banner -->
+  <div class="cookie-banner" id="cookieBanner">
+    <div class="cookie-banner-inner">
+      <p>Мы используем файлы cookie для улучшения работы сайта. Продолжая использование, вы соглашаетесь с нашей <a href="cookies.html">политикой cookies</a>.</p>
+      <div class="cookie-banner-actions">
+        <button class="btn btn-citrus btn-sm" onclick="acceptCookies()">Принять</button>
+        <button class="btn btn-outline btn-sm" onclick="declineCookies()">Отклонить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification -->
+  <div class="notification" id="notification"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    (async function() {
+      const CATEGORY_NAMES = {
+        aromatic: 'Ароматические',
+        decorative: 'Декоративные',
+        gift: 'Подарочные наборы',
+        interior: 'Для интерьера',
+        seasonal: 'Сезонные'
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const productId = parseInt(params.get('id'));
+
+      // Load from Supabase
+      initSupabase();
+      let allProducts = PRODUCTS;
+      let product = null;
+
+      if (db) {
+        try {
+          const { data, error } = await db.from('products').select('*').order('id');
+          if (!error && data) {
+            allProducts = data;
+            product = data.find(p => p.id === productId);
+          }
+        } catch(e) { console.error(e); }
+      }
+
+      if (!product) {
+        product = getProductById(productId);
+      }
+
+      if (!product) {
+        document.querySelector('.product-detail .container').innerHTML =
+          '<p style="text-align:center;padding:4rem 0;font-size:1.25rem;">Товар не найден. <a href="catalog.html">Вернуться в каталог</a></p>';
+        document.getElementById('relatedProducts').style.display = 'none';
+        return;
+      }
+
+      document.title = product.name + ' — ЛЮМС';
+
+      document.getElementById('productName').textContent = product.name;
+      document.getElementById('productCategory').textContent = CATEGORY_NAMES[product.category] || product.category;
+      document.getElementById('productAroma').textContent = product.aroma || '';
+      document.getElementById('productPrice').textContent = formatPrice(product.price);
+
+      // Stock status
+      var stockEl = document.getElementById('productStock');
+      var stock = product.stock || 0;
+      if (stock > 0) {
+        stockEl.innerHTML = '<span style="color:#2d8a4e;font-weight:500;">✓ В наличии: ' + stock + ' шт.</span>';
+      } else {
+        stockEl.innerHTML = '<span style="color:var(--coral);font-weight:500;">Под заказ (3-7 дней)</span>';
+      }
+
+      document.getElementById('productDescription').textContent = product.description || '';
+      document.getElementById('specComposition').textContent = product.composition || '';
+      document.getElementById('specWeight').textContent = product.weight || '';
+      document.getElementById('specBurnTime').textContent = product.burn_time || product.burnTime || '';
+
+      // Images gallery
+      var mainImage = document.getElementById('productMainImage');
+      var thumbsContainer = document.getElementById('productThumbs');
+      var imgUrl = product.image_url || product.imageUrl;
+      var allImages = product.images || [];
+      if (imgUrl && allImages.indexOf(imgUrl) === -1) {
+        allImages.unshift(imgUrl);
+      }
+
+      function setMainImage(url) {
+        mainImage.innerHTML = '<img src="' + url + '" alt="' + product.name + '">';
+        mainImage.className = '';
+        var thumbs = thumbsContainer.querySelectorAll('.thumb');
+        thumbs.forEach(function(t) {
+          t.classList.toggle('active', t.getAttribute('data-url') === url);
+        });
+      }
+
+      if (allImages.length > 0) {
+        setMainImage(allImages[0]);
+        thumbsContainer.innerHTML = allImages.map(function(url, i) {
+          return '<div class="thumb' + (i === 0 ? ' active' : '') + '" data-url="' + url + '" style="cursor:pointer;"><img src="' + url + '" alt="' + product.name + '"></div>';
+        }).join('');
+        thumbsContainer.querySelectorAll('.thumb').forEach(function(thumb) {
+          thumb.addEventListener('click', function() {
+            setMainImage(this.getAttribute('data-url'));
+          });
+        });
+      } else if (imgUrl) {
+        mainImage.innerHTML = '<img src="' + imgUrl + '" alt="' + product.name + '">';
+        mainImage.className = '';
+      } else if (product.placeholder) {
+        mainImage.classList.add(product.placeholder);
+      }
+
+      // Quantity — ограничение по stock (учитываем уже в корзине)
+      var qtyInput = document.getElementById('qtyInput');
+      var inCart = 0;
+      var cart = JSON.parse(localStorage.getItem('lums_cart') || '[]');
+      var cartItem = cart.find(function(c) { return c.id === product.id; });
+      if (cartItem) inCart = cartItem.qty;
+      var maxQty = (stock > 0) ? Math.max(1, stock - inCart) : 99;
+
+      document.getElementById('qtyMinus').addEventListener('click', function() {
+        var val = parseInt(qtyInput.value);
+        if (val > 1) qtyInput.value = val - 1;
+      });
+      document.getElementById('qtyPlus').addEventListener('click', function() {
+        var val = parseInt(qtyInput.value);
+        if (val < maxQty) {
+          qtyInput.value = val + 1;
+        } else {
+          showNotification('Доступно только ' + maxQty + ' шт.');
+        }
+      });
+
+      document.getElementById('addToCartBtn').addEventListener('click', function() {
+        addToCart(product.id, parseInt(qtyInput.value));
+      });
+
+      // Related products
+      var others = allProducts.filter(function(p) { return p.id !== product.id; });
+      for (var i = others.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = others[i]; others[i] = others[j]; others[j] = temp;
+      }
+      var related = others.slice(0, 4);
+
+      var grid = document.getElementById('relatedGrid');
+      grid.innerHTML = related.map(function(p) {
+        var badgeHtml = '';
+        if (p.badge === 'hit') badgeHtml = '<span class="product-badge hit">Хит</span>';
+        else if (p.badge === 'new') badgeHtml = '<span class="product-badge new">Новинка</span>';
+        else if (p.badge === 'eco') badgeHtml = '<span class="product-badge eco">Эко</span>';
+
+        var pImg = p.image_url || p.imageUrl;
+        var imgHtml = pImg
+          ? '<img src="' + pImg + '" alt="' + p.name + '" >'
+          : '<div class="placeholder p' + ((p.id % 8) + 1) + '">🕯️</div>';
+
+        return '<div class="product-card" data-id="' + p.id + '">' +
+          '<div class="product-card-image">' +
+            badgeHtml + imgHtml +
+            '<button class="product-card-add" onclick="addToCart(' + p.id + ')" aria-label="Добавить в корзину">+</button>' +
+          '</div>' +
+          '<a href="product.html?id=' + p.id + '" class="product-card-info">' +
+            '<h4>' + p.name + '</h4>' +
+            '<p class="product-aroma">' + (p.aroma || '') + '</p>' +
+            '<p class="product-price">' + formatPrice(p.price) + '</p>' +
+          '</a>' +
+        '</div>';
+      }).join('');
+    })();
+  </script>
+</body>
+</html>

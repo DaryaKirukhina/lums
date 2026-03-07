@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛЮМС — Админ-панель</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* --- Admin Layout --- */
+    .admin-header {
+      background: var(--dark);
+      color: var(--white);
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .admin-header-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .admin-header .logo {
+      font-size: 1.4rem;
+    }
+    .admin-title {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.6);
+    }
+    .admin-back {
+      color: var(--citrus);
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: color var(--transition);
+    }
+    .admin-back:hover {
+      color: var(--white);
+    }
+
+    .admin-body {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+
+    /* --- Status Bar --- */
+    .admin-status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .admin-status-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .status-dot.online { background: #2d8a4e; }
+    .status-dot.offline { background: var(--coral); }
+    .status-text {
+      font-size: 0.85rem;
+      color: var(--gray);
+    }
+    .product-count {
+      font-size: 0.85rem;
+      color: var(--gray);
+      background: var(--white);
+      padding: 4px 14px;
+      border-radius: var(--radius-pill);
+    }
+
+    /* --- Table --- */
+    .admin-table-wrap {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .admin-table thead {
+      background: var(--dark);
+      color: var(--white);
+    }
+    .admin-table th {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 14px 16px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .admin-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      vertical-align: middle;
+    }
+    .admin-table tbody tr:hover {
+      background: rgba(232, 249, 117, 0.1);
+    }
+    .admin-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .td-name {
+      font-weight: 500;
+    }
+    .td-price {
+      font-family: var(--font-display);
+      font-weight: 600;
+      color: var(--coral);
+      white-space: nowrap;
+    }
+    .td-category {
+      font-size: 0.8rem;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .td-category.aromatic   { background: #f3e5f5; color: #7b1fa2; }
+    .td-category.decorative { background: #e3f2fd; color: #1565c0; }
+    .td-category.gift       { background: #fce4ec; color: #c62828; }
+    .td-category.interior   { background: #fff3e0; color: #e65100; }
+    .td-category.seasonal   { background: #e8f5e9; color: #2e7d32; }
+    .td-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      display: inline-block;
+    }
+    .td-badge.hit { background: var(--coral); color: var(--white); }
+    .td-badge.new { background: var(--citrus); color: var(--dark); }
+    .td-badge.eco { background: #a8e6cf; color: var(--dark); }
+    .td-badge.none { color: var(--gray); font-weight: 400; }
+
+    .td-actions {
+      display: flex;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .btn-edit, .btn-delete {
+      padding: 6px 14px;
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+      border: none;
+    }
+    .btn-edit {
+      background: var(--citrus);
+      color: var(--dark);
+    }
+    .btn-edit:hover {
+      background: #d4e860;
+    }
+    .btn-delete {
+      background: transparent;
+      color: var(--coral);
+      border: 1px solid var(--coral);
+    }
+    .btn-delete:hover {
+      background: var(--coral);
+      color: var(--white);
+    }
+
+    /* --- Modal --- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal {
+      background: var(--vanilla);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    .modal-header h3 {
+      font-size: 1.1rem;
+    }
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      color: var(--gray);
+      cursor: pointer;
+      transition: all var(--transition);
+      background: none;
+      border: none;
+    }
+    .modal-close:hover {
+      background: rgba(0,0,0,0.06);
+      color: var(--dark);
+    }
+    .modal-body {
+      padding: 24px;
+    }
+    .modal-body .form-group {
+      margin-bottom: 16px;
+    }
+    .modal-body .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .modal-body label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .modal-body input,
+    .modal-body select,
+    .modal-body textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid rgba(0,0,0,0.1);
+      border-radius: var(--radius);
+      background: var(--white);
+      font-size: 0.9rem;
+      transition: border-color var(--transition);
+    }
+    .modal-body input:focus,
+    .modal-body select:focus,
+    .modal-body textarea:focus {
+      border-color: var(--coral);
+    }
+    .modal-body textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .modal-footer {
+      padding: 16px 24px 24px;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    /* --- Empty state --- */
+    .admin-empty {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--gray);
+    }
+    .admin-empty-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    /* --- Notification override for admin --- */
+    .admin-notification {
+      position: fixed;
+      top: 76px;
+      right: 24px;
+      padding: 14px 22px;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      z-index: 10000;
+      transform: translateX(120%);
+      transition: transform 0.4s ease;
+      color: var(--white);
+      background: var(--dark);
+    }
+    .admin-notification.show { transform: translateX(0); }
+    .admin-notification.success { background: #2d8a4e; }
+    .admin-notification.error { background: var(--coral); }
+
+    /* --- Responsive --- */
+    @media (max-width: 768px) {
+      .admin-table-wrap { overflow-x: auto; }
+      .admin-table { min-width: 700px; }
+      .modal-body .form-row { grid-template-columns: 1fr; }
+      .admin-status { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Header -->
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="index.html" class="logo">ЛЮМС</a>
+        <span class="admin-title">Админ-панель</span>
+      </div>
+      <a href="index.html" class="admin-back">&#8592; На сайт</a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="admin-body">
+    <!-- Status + Add Button -->
+    <div class="admin-status">
+      <div class="admin-status-info">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText"></span>
+        <span class="product-count" id="productCount"></span>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openAddForm()">+ Добавить товар</button>
+    </div>
+
+    <!-- Product Table -->
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Категория</th>
+            <th>Цена</th>
+            <th>Наличие</th>
+            <th>Бейдж</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody id="productsTableBody">
+          <tr>
+            <td colspan="7">
+              <div class="admin-empty">
+                <div class="admin-empty-icon">&#8987;</div>
+                <p>Загрузка товаров...</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Hero Slides Section -->
+    <div style="margin-top:48px;">
+      <div class="admin-status">
+        <div class="admin-status-info">
+          <span style="font-family:var(--font-display);font-size:1.1rem;font-weight:600;">Слайдшоу на главной</span>
+          <span class="product-count" id="slidesCount">0 слайдов</span>
+        </div>
+        <label class="btn btn-primary btn-sm" style="cursor:pointer;">
+          + Добавить фото
+          <input type="file" id="slideUpload" accept="image/*" style="display:none;">
+        </label>
+      </div>
+      <div id="slidesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;"></div>
+      <p id="slidesEmpty" style="text-align:center;padding:40px 24px;color:var(--gray);font-size:0.9rem;">Нет слайдов. Добавьте фото для слайдшоу на главной странице.</p>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Добавить товар</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="productForm" onsubmit="handleSubmit(event)">
+          <input type="hidden" id="editId">
+
+          <div class="form-group">
+            <label for="fname">Название *</label>
+            <input type="text" id="fname" required>
+          </div>
+
+          <div class="form-group">
+            <label for="faroma">Аромат</label>
+            <input type="text" id="faroma" placeholder="Ваниль, карамель">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fprice">Цена (руб.) *</label>
+              <input type="number" id="fprice" min="1" required>
+            </div>
+            <div class="form-group">
+              <label for="fcategory">Категория *</label>
+              <select id="fcategory" required>
+                <option value="aromatic">Ароматические</option>
+                <option value="decorative">Декоративные</option>
+                <option value="gift">Подарочные</option>
+                <option value="interior">Для интерьера</option>
+                <option value="seasonal">Сезонные</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fbadge">Бейдж</label>
+              <select id="fbadge">
+                <option value="">Нет</option>
+                <option value="hit">Хит</option>
+                <option value="new">Новинка</option>
+                <option value="eco">Эко</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="fweight">Вес</label>
+              <input type="text" id="fweight" placeholder="200 г">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fburn_time">Время горения</label>
+              <input type="text" id="fburn_time" placeholder="35-40 часов">
+            </div>
+            <div class="form-group">
+              <label for="fstock">В наличии (шт.)</label>
+              <input type="number" id="fstock" min="0" value="0" placeholder="0 = под заказ">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="fdescription">Описание</label>
+            <textarea id="fdescription" placeholder="Описание товара..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="fcomposition">Состав</label>
+            <textarea id="fcomposition" rows="2" placeholder="Соевый воск, хлопковый фитиль..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="fimage">Фото товара (можно выбрать несколько)</label>
+            <input type="file" id="fimage" accept="image/*" multiple style="padding:8px;border:2px dashed rgba(0,0,0,0.15);border-radius:var(--radius);cursor:pointer;">
+            <div id="imagePreview" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;"></div>
+            <input type="hidden" id="fimage_url">
+            <input type="hidden" id="fimages" value="[]">
+          </div>
+
+          <div class="modal-footer" style="padding:16px 0 0;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="closeModal()">Отмена</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="submitBtn">Добавить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification -->
+  <div class="admin-notification" id="adminNotification"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/main.js"></script>
+
+  <script>
+    /* ===== Admin Panel Logic ===== */
+
+    const STORAGE_KEY = 'lums_products_local';
+    let products = [];
+    let isSupabaseConnected = false;
+
+    // --- Category & Badge labels ---
+    const CATEGORY_LABELS = {
+      aromatic: 'Ароматические',
+      decorative: 'Декоративные',
+      gift: 'Подарочные',
+      interior: 'Для интерьера',
+      seasonal: 'Сезонные'
+    };
+    const BADGE_LABELS = {
+      hit: 'Хит',
+      new: 'Новинка',
+      eco: 'Эко'
+    };
+
+    // --- Init ---
+    document.addEventListener('DOMContentLoaded', async () => {
+      initSupabase();
+      isSupabaseConnected = (db !== null && db !== undefined && typeof db.from === 'function');
+      updateStatus();
+      await loadProducts();
+
+      // Image preview (multiple)
+      document.getElementById('fimage').addEventListener('change', function(e) {
+        const files = e.target.files;
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = '';
+        for (let i = 0; i < files.length; i++) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            preview.innerHTML += '<img src="' + ev.target.result + '" style="max-width:120px;max-height:100px;border-radius:8px;object-fit:cover;">';
+          };
+          reader.readAsDataURL(files[i]);
+        }
+      });
+    });
+
+    function updateStatus() {
+      const dot = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      if (isSupabaseConnected) {
+        dot.className = 'status-dot online';
+        text.textContent = 'Supabase подключен';
+      } else {
+        dot.className = 'status-dot offline';
+        text.textContent = 'Локальный режим (localStorage)';
+      }
+    }
+
+    // --- Load Products ---
+    async function loadProducts() {
+      if (isSupabaseConnected) {
+        try {
+          const { data, error } = await db.from('products').select('*').order('id');
+          if (error) throw error;
+          products = data || [];
+        } catch (e) {
+          console.error('Supabase fetch error:', e);
+          notify('Ошибка загрузки из Supabase, используем локальные данные', 'error');
+          products = getLocalProducts();
+          isSupabaseConnected = false;
+          updateStatus();
+        }
+      } else {
+        products = getLocalProducts();
+      }
+      renderTable();
+    }
+
+    function getLocalProducts() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try { return JSON.parse(stored); } catch(e) {}
+      }
+      // Seed from the PRODUCTS array in main.js, mapping to DB field names
+      const mapped = PRODUCTS.map(p => ({
+        id: p.id,
+        name: p.name,
+        aroma: p.aroma || '',
+        price: p.price,
+        category: p.category,
+        badge: p.badge || null,
+        description: p.description || '',
+        composition: p.composition || '',
+        weight: p.weight || '',
+        burn_time: p.burnTime || '',
+        image_url: p.imageUrl || ''
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+      return mapped;
+    }
+
+    function saveLocalProducts() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    }
+
+    // --- Render Table ---
+    function renderTable() {
+      const tbody = document.getElementById('productsTableBody');
+      const countEl = document.getElementById('productCount');
+      countEl.textContent = products.length + ' ' + pluralize(products.length, 'товар', 'товара', 'товаров');
+
+      if (products.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7"><div class="admin-empty"><div class="admin-empty-icon">&#128722;</div><p>Нет товаров. Добавьте первый!</p></div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = products.map(p => {
+        const catLabel = CATEGORY_LABELS[p.category] || p.category;
+        const badgeLabel = p.badge ? (BADGE_LABELS[p.badge] || p.badge) : '---';
+        const badgeClass = p.badge || 'none';
+        return `<tr>
+          <td style="color:var(--gray);font-size:0.85rem;">${p.id}</td>
+          <td class="td-name">${escapeHtml(p.name)}</td>
+          <td><span class="td-category ${p.category}">${catLabel}</span></td>
+          <td class="td-price">${formatPrice(p.price)}</td>
+          <td><span style="font-size:0.85rem;font-weight:500;color:${(p.stock || 0) > 0 ? '#2d8a4e' : 'var(--coral)'}">${(p.stock || 0) > 0 ? p.stock + ' шт.' : 'Под заказ'}</span></td>
+          <td><span class="td-badge ${badgeClass}">${badgeLabel}</span></td>
+          <td>
+            <div class="td-actions">
+              <button class="btn-edit" onclick="openEditForm(${p.id})">Изменить</button>
+              <button class="btn-delete" onclick="deleteProduct(${p.id})">Удалить</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    // --- Modal ---
+    function openAddForm() {
+      document.getElementById('editId').value = '';
+      document.getElementById('productForm').reset();
+      document.getElementById('imagePreview').innerHTML = '';
+      document.getElementById('fimages').value = '[]';
+      document.getElementById('modalTitle').textContent = 'Добавить товар';
+      document.getElementById('submitBtn').textContent = 'Добавить';
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+
+    function openEditForm(id) {
+      const p = products.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('editId').value = p.id;
+      document.getElementById('fname').value = p.name || '';
+      document.getElementById('faroma').value = p.aroma || '';
+      document.getElementById('fprice').value = p.price || '';
+      document.getElementById('fcategory').value = p.category || 'aromatic';
+      document.getElementById('fbadge').value = p.badge || '';
+      document.getElementById('fdescription').value = p.description || '';
+      document.getElementById('fcomposition').value = p.composition || '';
+      document.getElementById('fweight').value = p.weight || '';
+      document.getElementById('fburn_time').value = p.burn_time || '';
+      document.getElementById('fstock').value = p.stock || 0;
+      document.getElementById('fimage_url').value = p.image_url || '';
+      const existingImages = p.images || [];
+      document.getElementById('fimages').value = JSON.stringify(existingImages);
+      document.getElementById('fimage').value = '';
+      const preview = document.getElementById('imagePreview');
+      if (existingImages.length > 0) {
+        preview.innerHTML = existingImages.map(url => '<img src="' + url + '" style="max-width:120px;max-height:100px;border-radius:8px;object-fit:cover;">').join('') + '<br><small style="color:var(--gray);width:100%;">Выберите новые фото для добавления</small>';
+      } else if (p.image_url) {
+        preview.innerHTML = '<img src="' + p.image_url + '" style="max-width:120px;max-height:100px;border-radius:8px;object-fit:cover;"><br><small style="color:var(--gray);">Выберите новые фото для добавления</small>';
+      } else {
+        preview.innerHTML = '';
+      }
+      document.getElementById('modalTitle').textContent = 'Редактировать товар';
+      document.getElementById('submitBtn').textContent = 'Сохранить';
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('open');
+    }
+
+    // --- Submit (Add / Edit) ---
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editId').value;
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Сохранение...';
+
+      // Upload images
+      const fileInput = document.getElementById('fimage');
+      let imageUrl = document.getElementById('fimage_url').value.trim();
+      let imagesArr = [];
+      try { imagesArr = JSON.parse(document.getElementById('fimages').value || '[]'); } catch(e) {}
+
+      if (fileInput.files.length > 0) {
+        submitBtn.textContent = 'Загрузка фото...';
+        const uploadedUrls = [];
+        for (let i = 0; i < fileInput.files.length; i++) {
+          const uploaded = await uploadProductImage(fileInput.files[i]);
+          if (uploaded) {
+            uploadedUrls.push(uploaded);
+          } else if (isSupabaseConnected) {
+            notify('Ошибка загрузки фото #' + (i+1) + '. Проверьте Storage bucket.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = editId ? 'Сохранить' : 'Добавить';
+            return;
+          }
+        }
+        if (uploadedUrls.length > 0) {
+          imageUrl = uploadedUrls[0]; // главное фото — первое
+          imagesArr = imagesArr.concat(uploadedUrls);
+        }
+      }
+
+      const data = {
+        name: document.getElementById('fname').value.trim(),
+        aroma: document.getElementById('faroma').value.trim(),
+        price: parseInt(document.getElementById('fprice').value),
+        category: document.getElementById('fcategory').value,
+        badge: document.getElementById('fbadge').value || null,
+        description: document.getElementById('fdescription').value.trim(),
+        composition: document.getElementById('fcomposition').value.trim(),
+        weight: document.getElementById('fweight').value.trim(),
+        burn_time: document.getElementById('fburn_time').value.trim(),
+        image_url: imageUrl,
+        images: imagesArr,
+        stock: parseInt(document.getElementById('fstock').value) || 0
+      };
+
+      if (editId) {
+        await updateProduct(parseInt(editId), data);
+      } else {
+        await addProduct(data);
+      }
+      submitBtn.disabled = false;
+    }
+
+    // --- Add Product ---
+    async function addProduct(data) {
+      if (isSupabaseConnected) {
+        try {
+          const { data: inserted, error } = await db.from('products').insert(data).select();
+          if (error) throw error;
+          products.push(inserted[0]);
+          notify('Товар добавлен');
+        } catch (e) {
+          console.error(e);
+          notify('Ошибка при добавлении: ' + e.message, 'error');
+          return;
+        }
+      } else {
+        const maxId = products.length > 0 ? Math.max(...products.map(p => p.id)) : 0;
+        data.id = maxId + 1;
+        products.push(data);
+        saveLocalProducts();
+        notify('Товар добавлен (локально)');
+      }
+      closeModal();
+      renderTable();
+    }
+
+    // --- Update Product ---
+    async function updateProduct(id, data) {
+      if (isSupabaseConnected) {
+        try {
+          const { error } = await db.from('products').update(data).eq('id', id);
+          if (error) throw error;
+          const idx = products.findIndex(p => p.id === id);
+          if (idx !== -1) products[idx] = { ...products[idx], ...data };
+          notify('Товар обновлен');
+        } catch (e) {
+          console.error(e);
+          notify('Ошибка при обновлении: ' + e.message, 'error');
+          return;
+        }
+      } else {
+        const idx = products.findIndex(p => p.id === id);
+        if (idx !== -1) products[idx] = { ...products[idx], ...data };
+        saveLocalProducts();
+        notify('Товар обновлен (локально)');
+      }
+      closeModal();
+      renderTable();
+    }
+
+    // --- Delete Product ---
+    async function deleteProduct(id) {
+      const p = products.find(x => x.id === id);
+      if (!p) return;
+      if (!confirm('Удалить товар "' + p.name + '"?')) return;
+
+      if (isSupabaseConnected) {
+        try {
+          const { error } = await db.from('products').delete().eq('id', id);
+          if (error) throw error;
+          products = products.filter(x => x.id !== id);
+          notify('Товар удален');
+        } catch (e) {
+          console.error(e);
+          notify('Ошибка при удалении: ' + e.message, 'error');
+          return;
+        }
+      } else {
+        products = products.filter(x => x.id !== id);
+        saveLocalProducts();
+        notify('Товар удален (локально)');
+      }
+      renderTable();
+    }
+
+    // --- Notification ---
+    function notify(message, type = 'success') {
+      const el = document.getElementById('adminNotification');
+      el.textContent = message;
+      el.className = 'admin-notification show ' + type;
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    // --- Helpers ---
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    function pluralize(n, one, few, many) {
+      const mod10 = n % 10;
+      const mod100 = n % 100;
+      if (mod100 >= 11 && mod100 <= 19) return many;
+      if (mod10 === 1) return one;
+      if (mod10 >= 2 && mod10 <= 4) return few;
+      return many;
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    /* ===== Hero Slides Management ===== */
+    let heroSlides = [];
+
+    async function loadSlides() {
+      if (!isSupabaseConnected) {
+        document.getElementById('slidesEmpty').textContent = 'Управление слайдами доступно только при подключении к Supabase.';
+        return;
+      }
+      try {
+        var { data, error } = await db.from('hero_slides').select('*').order('sort_order');
+        if (error) throw error;
+        heroSlides = data || [];
+      } catch(e) {
+        console.error('Slides load error:', e);
+        heroSlides = [];
+      }
+      renderSlides();
+    }
+
+    function renderSlides() {
+      var grid = document.getElementById('slidesGrid');
+      var empty = document.getElementById('slidesEmpty');
+      var count = document.getElementById('slidesCount');
+      count.textContent = heroSlides.length + ' ' + pluralize(heroSlides.length, 'слайд', 'слайда', 'слайдов');
+
+      if (heroSlides.length === 0) {
+        grid.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+      grid.innerHTML = heroSlides.map(function(slide, i) {
+        return '<div style="position:relative;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:var(--white);">' +
+          '<img src="' + slide.image_url + '" style="width:100%;height:160px;object-fit:cover;display:block;">' +
+          '<div style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;">' +
+            '<span style="font-size:0.8rem;color:var(--gray);">Порядок: ' + (slide.sort_order || 0) + '</span>' +
+            '<button class="btn-delete" onclick="deleteSlide(' + slide.id + ')" style="font-size:0.75rem;padding:4px 10px;">Удалить</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    // Upload slide
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('slideUpload').addEventListener('change', async function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        if (!isSupabaseConnected) {
+          notify('Загрузка слайдов доступна только с Supabase', 'error');
+          return;
+        }
+        notify('Загрузка фото...');
+        var url = await uploadProductImage(file);
+        if (!url) {
+          notify('Ошибка загрузки фото', 'error');
+          e.target.value = '';
+          return;
+        }
+        var sortOrder = heroSlides.length > 0 ? Math.max.apply(null, heroSlides.map(function(s) { return s.sort_order || 0; })) + 1 : 0;
+        try {
+          var { error } = await db.from('hero_slides').insert({ image_url: url, sort_order: sortOrder });
+          if (error) throw error;
+          notify('Слайд добавлен');
+          await loadSlides();
+        } catch(err) {
+          console.error(err);
+          notify('Ошибка сохранения слайда: ' + err.message, 'error');
+        }
+        e.target.value = '';
+      });
+
+      // Load slides on init
+      loadSlides();
+    });
+
+    async function deleteSlide(id) {
+      if (!confirm('Удалить этот слайд?')) return;
+      var slide = heroSlides.find(function(s) { return s.id === id; });
+      try {
+        var { error } = await db.from('hero_slides').delete().eq('id', id);
+        if (error) throw error;
+        // Удаляем фото из Storage
+        if (slide && slide.image_url) {
+          await deleteProductImage(slide.image_url);
+        }
+        notify('Слайд удален');
+        await loadSlides();
+      } catch(e) {
+        console.error(e);
+        notify('Ошибка удаления: ' + e.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

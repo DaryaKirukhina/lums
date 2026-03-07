@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Оформление заказа — ЛЮМС</title>
+  <meta name="description" content="Оформление заказа — интернет-магазин натуральных свечей ЛЮМС.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">ЛЮМС</a>
+      <nav class="nav" id="nav">
+        <a href="index.html">Главная</a>
+        <a href="catalog.html">Каталог</a>
+        <a href="about.html">О нас</a>
+        <a href="contacts.html">Контакты</a>
+      </nav>
+      <div class="header-actions">
+        <a href="cart.html" class="cart-link" aria-label="Корзина">
+          🛒
+          <span class="cart-count" id="cartCount" style="display:none;">0</span>
+        </a>
+        <div class="burger" id="burger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="container">
+      <h1>Оформление заказа</h1>
+    </div>
+  </div>
+
+  <!-- Checkout Content -->
+  <div class="checkout-page">
+    <div class="container">
+      <div class="checkout-grid">
+        <!-- Left: Form -->
+        <form class="checkout-form" id="checkoutForm" novalidate>
+          <!-- Contact Info -->
+          <div class="checkout-form-section">
+            <h3>Контактные данные</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="customerName">Имя *</label>
+                <input type="text" id="customerName" name="name" required placeholder="Ваше имя">
+              </div>
+              <div class="form-group">
+                <label for="customerPhone">Телефон *</label>
+                <input type="tel" id="customerPhone" name="phone" required placeholder="+7 (___) ___-__-__">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group full">
+                <label for="customerEmail">Email *</label>
+                <input type="email" id="customerEmail" name="email" required placeholder="your@email.com">
+              </div>
+            </div>
+          </div>
+
+          <!-- Delivery Address -->
+          <div class="checkout-form-section" id="addressSection">
+            <h3>Адрес доставки</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="city">Город *</label>
+                <input type="text" id="city" name="city" required placeholder="Самара">
+              </div>
+              <div class="form-group">
+                <label for="postalCode">Индекс</label>
+                <input type="text" id="postalCode" name="postalCode" placeholder="443000">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group full">
+                <label for="address">Адрес *</label>
+                <input type="text" id="address" name="address" required placeholder="Улица, дом, корпус">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="apartment">Квартира / офис</label>
+                <input type="text" id="apartment" name="apartment" placeholder="Кв. 1">
+              </div>
+            </div>
+          </div>
+
+          <!-- Pickup Info (shown when self-pickup selected) -->
+          <div id="pickupInfo" style="display:none; background: var(--bg); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px;">
+            <p style="font-weight: 500; margin-bottom: 4px;">📍 Адрес самовывоза:</p>
+            <p style="color: var(--gray); font-size: 0.9rem;">г. Самара, ул. Мориса Тореза 13А</p>
+          </div>
+
+          <!-- Delivery Method -->
+          <div class="checkout-form-section">
+            <h3>Способ доставки</h3>
+            <div class="delivery-options">
+              <label class="delivery-option">
+                <input type="radio" name="delivery" value="courier" data-price="350" checked>
+                <div>
+                  <strong>Курьер</strong>
+                  <span style="color: var(--gray); font-size: 0.85rem;"> — 350 ₽</span>
+                </div>
+              </label>
+              <label class="delivery-option">
+                <input type="radio" name="delivery" value="pickup_point" data-price="200">
+                <div>
+                  <strong>Пункт выдачи</strong>
+                  <span style="color: var(--gray); font-size: 0.85rem;"> — 200 ₽</span>
+                </div>
+              </label>
+              <label class="delivery-option">
+                <input type="radio" name="delivery" value="self" data-price="0">
+                <div>
+                  <strong>Самовывоз</strong>
+                  <span style="color: var(--gray); font-size: 0.85rem;"> — бесплатно</span>
+                </div>
+              </label>
+            </div>
+            <p id="courierNote" style="display:none; font-size: 0.8rem; color: var(--coral); margin-top: 8px;">Курьерская доставка доступна только по г. Самара</p>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Оформить заказ</button>
+        </form>
+
+        <!-- Right: Order Summary -->
+        <div class="checkout-order-summary" id="orderSummary">
+          <h3 style="margin-bottom: 20px;">Ваш заказ</h3>
+          <div id="orderItems"></div>
+          <div class="cart-summary-row" id="summarySubtotal">
+            <span>Товары</span>
+            <span>0 ₽</span>
+          </div>
+          <div class="cart-summary-row" id="summaryDelivery">
+            <span>Доставка</span>
+            <span>350 ₽</span>
+          </div>
+          <div class="cart-summary-row total" id="summaryTotal">
+            <span>Итого</span>
+            <span>0 ₽</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">ЛЮМС</a>
+          <p>Натуральные свечи ручной работы. Создаём уют и атмосферу в каждом доме с 2026 года.</p>
+          <p style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:12px;">Самозанятая Кирюхина Дарья Олеговна<br>ИНН 561443012986</p>
+        </div>
+        <div>
+          <h4>Каталог</h4>
+          <ul>
+            <li><a href="catalog.html?category=aromatic">Ароматические</a></li>
+            <li><a href="catalog.html?category=decorative">Декоративные</a></li>
+            <li><a href="catalog.html?category=gift">Подарочные</a></li>
+            <li><a href="catalog.html?category=interior">Для интерьера</a></li>
+            <li><a href="catalog.html?category=seasonal">Сезонные</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Информация</h4>
+          <ul>
+            <li><a href="about.html">О нас</a></li>
+            <li><a href="contacts.html">Контакты</a></li>
+            <li><a href="#">Доставка и оплата</a></li>
+            <li><a href="#">Обмен и возврат</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Контакты</h4>
+          <ul>
+            <li><a href="tel:+79058445098">+7 (905) 844-50-98</a></li>
+            <li><a href="mailto:hello@lums.ru">hello@lums.ru</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 ЛЮМС. Все права защищены.</p>
+        <div class="footer-bottom-links">
+          <a href="privacy.html">Политика конфиденциальности</a>
+          <a href="terms.html">Пользовательское соглашение</a>
+          <a href="cookies.html">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cookie Banner -->
+  <div class="cookie-banner" id="cookieBanner">
+    <div class="cookie-banner-inner">
+      <p>Мы используем файлы cookie для улучшения работы сайта. Продолжая использование, вы соглашаетесь с нашей <a href="cookies.html">политикой cookies</a>.</p>
+      <div class="cookie-banner-actions">
+        <button class="btn btn-citrus btn-sm" onclick="acceptCookies()">Принять</button>
+        <button class="btn btn-outline btn-sm" onclick="declineCookies()">Отклонить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification -->
+  <div class="notification" id="notification"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/checkout.js"></script>
+</body>
+</html>
