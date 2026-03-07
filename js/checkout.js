@@ -325,7 +325,7 @@ async function handleCheckoutSubmit(e) {
   clearCart();
 
   setTimeout(function() {
-    window.location.href = 'index.html?order=success';
+    window.location.href = '/?order=success';
   }, 2000);
 }
 

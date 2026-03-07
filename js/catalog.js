@@ -78,7 +78,7 @@
         ${imageHTML}
         <button class="product-card-add" onclick="addToCart(${product.id})" aria-label="Добавить в корзину">+</button>
       </div>
-      <a href="product.html?id=${product.id}" class="product-card-info">
+      <a href="../product/?id=${product.id}" class="product-card-info">
         <h4>${product.name}</h4>
         <p class="product-aroma">${product.aroma || ''}</p>
         <p class="product-price">${formatPrice(product.price)}</p>
