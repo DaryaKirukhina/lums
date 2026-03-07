@@ -1579,9 +1579,16 @@ section {
     display: none;
   }
 
+  .header.nav-open {
+    bottom: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--vanilla);
+  }
+
   .nav {
     display: none;
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
@@ -1709,16 +1716,13 @@ section {
 
   .catalog-sidebar {
     position: static;
-    display: flex;
-    gap: 16px;
-    overflow-x: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
     padding-bottom: 16px;
-    -webkit-overflow-scrolling: touch;
   }
 
   .filter-group {
-    min-width: 160px;
-    flex-shrink: 0;
     background: var(--white);
     padding: 16px;
     border-radius: var(--radius);

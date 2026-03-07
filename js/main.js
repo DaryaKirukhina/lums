@@ -58,6 +58,7 @@ if (burger && nav) {
   burger.addEventListener('click', () => {
     burger.classList.toggle('active');
     nav.classList.toggle('open');
+    header.classList.toggle('nav-open');
     document.body.style.overflow = nav.classList.contains('open') ? 'hidden' : '';
   });
 
@@ -65,6 +66,7 @@ if (burger && nav) {
     link.addEventListener('click', () => {
       burger.classList.remove('active');
       nav.classList.remove('open');
+      header.classList.remove('nav-open');
       document.body.style.overflow = '';
     });
   });
