@@ -21,7 +21,7 @@
       </nav>
       <div class="header-actions">
         <a href="cart.html" class="cart-link" aria-label="Корзина">
-          🛒
+          🛒 <span class="cart-label">Корзина</span>
           <span class="cart-count" id="cartCount" style="display:none;">0</span>
         </a>
         <div class="burger" id="burger">
@@ -228,7 +228,7 @@
           allSlides[current].classList.remove('active');
           current = (current + 1) % allSlides.length;
           allSlides[current].classList.add('active');
-        }, 5000);
+        }, 3000);
       } catch(e) {
         console.error('Hero slideshow error:', e);
       }

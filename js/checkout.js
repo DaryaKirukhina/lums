@@ -146,13 +146,8 @@ function handleDeliveryChange() {
   renderOrderSummary();
 }
 
-// --- Telegram Notification ---
+// --- Telegram Notification (через серверную функцию) ---
 async function sendTelegramNotification(order) {
-  if (typeof CONFIG === 'undefined' || !CONFIG.TELEGRAM_BOT_TOKEN || !CONFIG.TELEGRAM_CHAT_ID) {
-    console.warn('Telegram: не настроены TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID в config.js');
-    return;
-  }
-
   var DELIVERY_NAMES = {
     courier: 'Курьер (350 руб.)',
     pickup_point: 'Пункт выдачи (200 руб.)',
@@ -181,23 +176,8 @@ async function sendTelegramNotification(order) {
 
   text += '\n\u{1F4B0} <b>Итого:</b> ' + order.total + ' руб.';
 
-  try {
-    var response = await fetch('https://api.telegram.org/bot' + CONFIG.TELEGRAM_BOT_TOKEN + '/sendMessage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: CONFIG.TELEGRAM_CHAT_ID,
-        text: text,
-        parse_mode: 'HTML'
-      })
-    });
-    var result = await response.json();
-    if (!result.ok) {
-      console.error('Telegram API error:', result);
-    }
-  } catch (e) {
-    console.error('Telegram notification error:', e);
-  }
+  // Отправляем через серверную Postgres-функцию (токен скрыт в БД)
+  await sendTelegramViaRPC(text);
 }
 
 // Экранирование HTML-спецсимволов для Telegram

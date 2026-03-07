@@ -114,31 +114,31 @@ async function saveOrderToSupabase(order) {
   return { success: true };
 }
 
-// --- Decrease Stock ---
+// --- Decrease Stock (через RPC, обходит RLS) ---
 async function decreaseStock(items) {
-  if (!db) return; // в локальном режиме не управляем stock
+  if (!db) return;
 
-  for (var i = 0; i < items.length; i++) {
-    var item = items[i];
-    // Получаем текущий stock
-    var { data: product, error: fetchErr } = await db
-      .from('products')
-      .select('stock')
-      .eq('id', item.id)
-      .single();
+  var itemsJson = items.map(function(item) {
+    return { id: item.id, qty: item.qty };
+  });
 
-    if (fetchErr || !product) continue;
-
-    var currentStock = product.stock || 0;
-    if (currentStock > 0) {
-      var newStock = Math.max(0, currentStock - item.qty);
-      await db.from('products').update({ stock: newStock }).eq('id', item.id);
-    }
-    // Если stock === 0 (под заказ) — не трогаем
+  var { error } = await db.rpc('decrease_stock', { items: itemsJson });
+  if (error) {
+    console.error('Error decreasing stock:', error);
   }
 
   // Обновляем кэш продуктов
   _supabaseProducts = null;
+}
+
+// --- Telegram (через RPC, токен на сервере) ---
+async function sendTelegramViaRPC(messageText) {
+  if (!db) return;
+
+  var { error } = await db.rpc('send_telegram', { message_text: messageText });
+  if (error) {
+    console.error('Telegram RPC error:', error);
+  }
 }
 
 // --- Contact Messages ---

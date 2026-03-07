@@ -309,6 +309,55 @@
     .admin-notification.success { background: #2d8a4e; }
     .admin-notification.error { background: var(--coral); }
 
+    /* --- Login Screen --- */
+    .admin-login {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--dark);
+      padding: 24px;
+    }
+    .admin-login-card {
+      background: var(--vanilla);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .admin-login-card .logo {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .admin-login-card p {
+      color: var(--gray);
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+    .admin-login-card input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid rgba(0,0,0,0.1);
+      border-radius: var(--radius);
+      background: var(--white);
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      transition: border-color var(--transition);
+    }
+    .admin-login-card input:focus {
+      border-color: var(--coral);
+      outline: none;
+    }
+    .admin-login-error {
+      color: var(--coral);
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      display: none;
+    }
+
     /* --- Responsive --- */
     @media (max-width: 768px) {
       .admin-table-wrap { overflow-x: auto; }
@@ -320,6 +369,23 @@
 </head>
 <body>
 
+  <!-- Login Screen -->
+  <div class="admin-login" id="loginScreen">
+    <div class="admin-login-card">
+      <span class="logo">ЛЮМС</span>
+      <p>Вход в админ-панель</p>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <input type="email" id="loginEmail" placeholder="Email" required>
+        <input type="password" id="loginPassword" placeholder="Пароль" required>
+        <p class="admin-login-error" id="loginError"></p>
+        <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%;">Войти</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Panel (hidden until login) -->
+  <div id="adminPanel" style="display:none;">
+
   <!-- Admin Header -->
   <header class="admin-header">
     <div class="admin-header-inner">
@@ -327,7 +393,10 @@
         <a href="index.html" class="logo">ЛЮМС</a>
         <span class="admin-title">Админ-панель</span>
       </div>
-      <a href="index.html" class="admin-back">&#8592; На сайт</a>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <span id="adminEmail" style="color:rgba(255,255,255,0.5);font-size:0.8rem;"></span>
+        <button onclick="handleLogout()" class="admin-back" style="background:none;border:none;cursor:pointer;font-size:0.85rem;">Выйти</button>
+      </div>
     </div>
   </header>
 
@@ -481,6 +550,8 @@
   <!-- Notification -->
   <div class="admin-notification" id="adminNotification"></div>
 
+  </div><!-- /adminPanel -->
+
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
@@ -493,6 +564,52 @@
     const STORAGE_KEY = 'lums_products_local';
     let products = [];
     let isSupabaseConnected = false;
+
+    // --- Auth ---
+    async function handleLogin(e) {
+      e.preventDefault();
+      var email = document.getElementById('loginEmail').value.trim();
+      var password = document.getElementById('loginPassword').value;
+      var errorEl = document.getElementById('loginError');
+      var btn = document.getElementById('loginBtn');
+
+      errorEl.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Вход...';
+
+      initSupabase();
+      if (!db) {
+        errorEl.textContent = 'Supabase не подключен. Проверьте config.js';
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Войти';
+        return;
+      }
+
+      var { data, error } = await db.auth.signInWithPassword({ email: email, password: password });
+      if (error) {
+        errorEl.textContent = 'Неверный email или пароль';
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Войти';
+        return;
+      }
+
+      showAdminPanel(data.user.email);
+    }
+
+    async function handleLogout() {
+      if (db) await db.auth.signOut();
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('adminPanel').style.display = 'none';
+    }
+
+    function showAdminPanel(email) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      document.getElementById('adminEmail').textContent = email || '';
+      initAdminPanel();
+    }
 
     // --- Category & Badge labels ---
     const CATEGORY_LABELS = {
@@ -509,8 +626,7 @@
     };
 
     // --- Init ---
-    document.addEventListener('DOMContentLoaded', async () => {
-      initSupabase();
+    async function initAdminPanel() {
       isSupabaseConnected = (db !== null && db !== undefined && typeof db.from === 'function');
       updateStatus();
       await loadProducts();
@@ -528,6 +644,23 @@
           reader.readAsDataURL(files[i]);
         }
       });
+
+      // Init slides
+      initSlideUpload();
+    }
+
+    // --- Auto-login check on page load ---
+    document.addEventListener('DOMContentLoaded', async () => {
+      initSupabase();
+      if (db) {
+        var { data: { session } } = await db.auth.getSession();
+        if (session && session.user) {
+          showAdminPanel(session.user.email);
+          return;
+        }
+      }
+      // No session — show login
+      document.getElementById('loginScreen').style.display = 'flex';
     });
 
     function updateStatus() {
@@ -869,8 +1002,8 @@
       }).join('');
     }
 
-    // Upload slide
-    document.addEventListener('DOMContentLoaded', function() {
+    // Upload slide — init called from initAdminPanel
+    function initSlideUpload() {
       document.getElementById('slideUpload').addEventListener('change', async function(e) {
         var file = e.target.files[0];
         if (!file) return;
@@ -900,7 +1033,7 @@
 
       // Load slides on init
       loadSlides();
-    });
+    }
 
     async function deleteSlide(id) {
       if (!confirm('Удалить этот слайд?')) return;
