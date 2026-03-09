@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — ЛЮМС</title>
+  <meta name="description" content="Вход в личный кабинет ЛЮМС.">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css?v=3">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container header-inner">
+      <a href="../" class="logo">ЛЮМС</a>
+      <nav class="nav" id="nav">
+        <a href="../">Главная</a>
+        <a href="../catalog/">Каталог</a>
+        <a href="../about/">О нас</a>
+        <a href="../contacts/">Контакты</a>
+      </nav>
+      <div class="header-actions">
+        <a href="../cart/" class="cart-link" aria-label="Корзина">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-count" id="cartCount" style="display:none;">0</span>
+        </a>
+        <a href="../account/" class="account-link" data-account-url="../account/" data-login-url="../login/" aria-label="Личный кабинет">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </a>
+        <div class="burger" id="burger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Login -->
+  <div class="auth-page">
+    <div class="container">
+      <div class="auth-card">
+        <h1>Вход</h1>
+        <p class="auth-subtitle">Введите email — мы отправим ссылку для входа. Без пароля, быстро и безопасно.</p>
+
+        <!-- Step 1: Email input -->
+        <form id="loginForm" class="auth-form">
+          <div class="form-group">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" required placeholder="your@email.com" autocomplete="email">
+          </div>
+          <p class="auth-error" id="loginError"></p>
+          <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%;">Получить ссылку для входа</button>
+        </form>
+
+        <!-- Step 2: Success message -->
+        <div id="loginSuccess" style="display:none;">
+          <div class="auth-success-icon">&#9993;</div>
+          <h2>Проверьте почту!</h2>
+          <p>Мы отправили ссылку для входа на <strong id="sentEmail"></strong></p>
+          <p class="auth-hint">Перейдите по ссылке в письме, чтобы войти в личный кабинет. Письмо придёт в течение минуты.</p>
+          <button class="btn btn-outline btn-sm" onclick="showLoginForm()" style="margin-top:20px;">Отправить ещё раз</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="../" class="logo">ЛЮМС</a>
+          <p>Натуральные свечи ручной работы. Создаём уют и атмосферу в каждом доме с 2026 года.</p>
+        </div>
+        <div>
+          <h4>Каталог</h4>
+          <ul>
+            <li><a href="../catalog/?category=aromatic">Ароматические</a></li>
+            <li><a href="../catalog/?category=decorative">Декоративные</a></li>
+            <li><a href="../catalog/?category=gift">Подарочные</a></li>
+            <li><a href="../catalog/?category=interior">Для интерьера</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Информация</h4>
+          <ul>
+            <li><a href="../about/">О нас</a></li>
+            <li><a href="../contacts/">Контакты</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Контакты</h4>
+          <ul>
+            <li><a href="tel:+79058445098">+7 (905) 844-50-98</a></li>
+            <li><a href="mailto:hello@lumscandle.ru">hello@lumscandle.ru</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 ЛЮМС. Все права защищены.</p>
+        <div class="footer-bottom-links">
+          <a href="../privacy/">Политика конфиденциальности</a>
+          <a href="../terms/">Пользовательское соглашение</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="notification" id="notification"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js?v=2"></script>
+  <script src="../js/supabase.js?v=2"></script>
+  <script src="../js/main.js?v=2"></script>
+  <script src="../js/cart.js?v=2"></script>
+  <script src="../js/auth.js?v=2"></script>
+  <script>
+    // If already logged in, redirect to account
+    document.addEventListener('DOMContentLoaded', async function() {
+      initSupabase();
+      if (db) {
+        var { data: { session } } = await db.auth.getSession();
+        if (session && session.user) {
+          window.location.href = '../account/';
+          return;
+        }
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var email = document.getElementById('loginEmail').value.trim();
+      var errorEl = document.getElementById('loginError');
+      var btn = document.getElementById('loginBtn');
+
+      errorEl.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Отправка...';
+
+      var result = await sendMagicLink(email);
+
+      if (!result.success) {
+        errorEl.textContent = result.error || 'Ошибка отправки. Попробуйте позже.';
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Получить ссылку для входа';
+        return;
+      }
+
+      // Show success
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('sentEmail').textContent = email;
+      document.getElementById('loginSuccess').style.display = 'block';
+    });
+
+    function showLoginForm() {
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('loginSuccess').style.display = 'none';
+      document.getElementById('loginBtn').disabled = false;
+      document.getElementById('loginBtn').textContent = 'Получить ссылку для входа';
+    }
+  </script>
+</body>
+</html>

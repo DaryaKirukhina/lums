@@ -72,23 +72,26 @@ async function saveOrderToSupabase(order) {
     return { success: true, fallback: true };
   }
 
+  var orderData = {
+    id: order.id,
+    customer_name: order.customer.name,
+    customer_phone: order.customer.phone,
+    customer_email: order.customer.email,
+    city: order.address.city,
+    address: order.address.address,
+    apartment: order.address.apartment,
+    postal_code: order.address.postalCode,
+    delivery_method: order.delivery.method,
+    delivery_price: order.delivery.price,
+    subtotal: order.subtotal,
+    total: order.total,
+    status: order.status
+  };
+  if (order.user_id) orderData.user_id = order.user_id;
+
   const { error: orderError } = await db
     .from('orders')
-    .insert({
-      id: order.id,
-      customer_name: order.customer.name,
-      customer_phone: order.customer.phone,
-      customer_email: order.customer.email,
-      city: order.address.city,
-      address: order.address.address,
-      apartment: order.address.apartment,
-      postal_code: order.address.postalCode,
-      delivery_method: order.delivery.method,
-      delivery_price: order.delivery.price,
-      subtotal: order.subtotal,
-      total: order.total,
-      status: order.status
-    });
+    .insert(orderData);
 
   if (orderError) {
     console.error('Error saving order:', orderError);
@@ -165,6 +168,46 @@ async function saveContactMessage(message) {
   }
 
   return { success: true };
+}
+
+// --- Send Order Confirmation Email (via Resend RPC) ---
+async function sendOrderEmail(order) {
+  if (!db) return;
+
+  var itemsHtml = '<table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;">'
+    + '<thead><tr style="background:#f9f9f9;"><th style="padding:8px;text-align:left;">Товар</th><th style="padding:8px;">Кол-во</th><th style="padding:8px;text-align:right;">Сумма</th></tr></thead><tbody>';
+  order.items.forEach(function(item) {
+    itemsHtml += '<tr><td style="padding:8px;border-bottom:1px solid #f0f0f0;">' + item.name + '</td>'
+      + '<td style="padding:8px;border-bottom:1px solid #f0f0f0;">' + item.qty + ' шт.</td>'
+      + '<td style="padding:8px;border-bottom:1px solid #f0f0f0;text-align:right;">' + (item.price * item.qty) + ' ₽</td></tr>';
+  });
+  itemsHtml += '</tbody></table>';
+
+  try {
+    await db.rpc('send_order_email', {
+      order_id: order.id,
+      customer_email: order.customer.email,
+      customer_name: order.customer.name,
+      items_html: itemsHtml,
+      total_amount: order.total
+    });
+  } catch(e) {
+    console.error('Order email error:', e);
+  }
+}
+
+// --- Send Status Change Email (via Resend RPC) ---
+async function sendStatusEmail(orderId, customerEmail, newStatus) {
+  if (!db) return;
+  try {
+    await db.rpc('send_status_email', {
+      order_id: orderId,
+      customer_email: customerEmail,
+      new_status: newStatus
+    });
+  } catch(e) {
+    console.error('Status email error:', e);
+  }
 }
 
 // --- Init ---

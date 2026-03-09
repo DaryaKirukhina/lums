@@ -287,6 +287,7 @@ async function handleCheckoutSubmit(e) {
   const order = {
     id: 'LUMS-' + Date.now(),
     timestamp: new Date().toISOString(),
+    user_id: (typeof currentUser !== 'undefined' && currentUser) ? currentUser.id : null,
     customer: {
       name: form.querySelector('#customerName').value.trim(),
       phone: form.querySelector('#customerPhone').value.trim(),
@@ -327,6 +328,9 @@ async function handleCheckoutSubmit(e) {
   // Send Telegram notification
   await sendTelegramNotification(order);
 
+  // Send order confirmation email
+  await sendOrderEmail(order);
+
   showNotification('Заказ успешно оформлен! Спасибо за покупку.');
   clearCart();
 
@@ -351,6 +355,18 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   // Apply initial delivery state
   handleDeliveryChange();
+
+  // Auto-fill from profile if logged in
+  if (typeof currentUser !== 'undefined' && currentUser) {
+    var nameField = document.getElementById('customerName');
+    var phoneField = document.getElementById('customerPhone');
+    var emailField = document.getElementById('customerEmail');
+    if (emailField && !emailField.value) emailField.value = currentUser.email || '';
+    if (currentUser.profile) {
+      if (nameField && !nameField.value) nameField.value = currentUser.profile.name || '';
+      if (phoneField && !phoneField.value) phoneField.value = currentUser.profile.phone || '';
+    }
+  }
 
   // Consent checkbox
   var consentBox = document.getElementById('consentCheckbox');
