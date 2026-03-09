@@ -500,6 +500,21 @@ async function handleCheckoutSubmit(e) {
 
 // --- Init ---
 document.addEventListener('DOMContentLoaded', async function() {
+  // Redirect to login if not authenticated
+  initSupabase();
+  if (db) {
+    try {
+      var { data: { session } } = await db.auth.getSession();
+      if (!session || !session.user) {
+        window.location.href = '../login/';
+        return;
+      }
+    } catch(e) {
+      // If Supabase fails (e.g. Safari blocking), allow checkout anyway
+      console.warn('Auth check failed, proceeding:', e);
+    }
+  }
+
   await fetchAllProducts();
   await renderOrderSummary();
 

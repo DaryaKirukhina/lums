@@ -6,7 +6,7 @@
   <title>Корзина — ЛЮМС</title>
   <meta name="description" content="Корзина покупок — интернет-магазин натуральных свечей ЛЮМС.">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../css/style.css?v=3">
+  <link rel="stylesheet" href="../css/style.css?v=5">
 </head>
 <body>
   <!-- Header -->
@@ -182,11 +182,23 @@
             <span>Итого</span>
             <span>${formatPrice(subtotal)}</span>
           </div>
-          <a href="../checkout/" class="btn btn-primary">Перейти к оформлению</a>
+          <a href="#" class="btn btn-primary" id="checkoutBtn" onclick="goToCheckout(event)">Перейти к оформлению</a>
         </div>
       `;
 
       container.innerHTML = itemsHtml + summaryHtml;
+    }
+
+    function goToCheckout(e) {
+      e.preventDefault();
+      if (currentUser) {
+        window.location.href = '../checkout/';
+      } else {
+        showNotification('Для оформления заказа необходимо войти в аккаунт', 'info');
+        setTimeout(function() {
+          window.location.href = '../login/';
+        }, 1500);
+      }
     }
 
     document.addEventListener('DOMContentLoaded', renderCart);
