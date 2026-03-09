@@ -117,7 +117,7 @@
     if (db) {
       try {
         const { data, error } = await db.from('products').select('*').order('id');
-        if (!error && data) {
+        if (!error && data && data.length > 0) {
           catalogProducts = data;
           render();
           return;

@@ -1872,6 +1872,10 @@ section {
 }
 
 @media (max-width: 768px) {
+  .header-actions {
+    gap: 6px;
+  }
+
   .cart-label {
     display: none;
   }
