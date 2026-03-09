@@ -84,6 +84,9 @@ async function saveOrderToSupabase(order) {
     delivery_method: order.delivery.method,
     delivery_price: order.delivery.price,
     subtotal: order.subtotal,
+    discount: order.discount || 0,
+    promo_code: order.promo ? order.promo.code : null,
+    comment: order.comment || null,
     total: order.total,
     status: order.status
   };

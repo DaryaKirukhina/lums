@@ -46,26 +46,108 @@
  * ========================================================
  */
 
+// --- Promo & Discount State ---
+var appliedPromo = null; // { code, discount } or null
+var FREE_DELIVERY_THRESHOLD = 3000;
+
+// --- Promo Code Logic ---
+async function applyPromoCode() {
+  var input = document.getElementById('promoCode');
+  var resultEl = document.getElementById('promoResult');
+  if (!input || !resultEl) return;
+
+  var code = input.value.trim().toLowerCase();
+
+  if (code === '') {
+    resultEl.style.display = 'none';
+    return;
+  }
+
+  if (code === 'люмс15') {
+    // Проверяем: промокод только на первый заказ (не использовался ранее)
+    var alreadyUsed = await checkPromoAlreadyUsed('люмс15');
+    if (alreadyUsed) {
+      appliedPromo = null;
+      resultEl.textContent = 'Промокод действует только на первый заказ';
+      resultEl.style.color = 'var(--coral)';
+      resultEl.style.display = 'block';
+      renderOrderSummary();
+      return;
+    }
+
+    appliedPromo = { code: 'люмс15', discount: 0.15 };
+    resultEl.textContent = 'Промокод применён! Скидка 15%';
+    resultEl.style.color = 'var(--green, #2d8a4e)';
+    resultEl.style.display = 'block';
+    input.disabled = true;
+    document.getElementById('applyPromoBtn').disabled = true;
+  } else {
+    appliedPromo = null;
+    resultEl.textContent = 'Промокод не найден';
+    resultEl.style.color = 'var(--coral)';
+    resultEl.style.display = 'block';
+  }
+
+  renderOrderSummary();
+}
+
+// --- Check if promo code already used by this user/email ---
+async function checkPromoAlreadyUsed(code) {
+  if (!db) return false;
+
+  // Проверяем по user_id если залогинен
+  if (typeof currentUser !== 'undefined' && currentUser) {
+    try {
+      var { data } = await db.from('orders').select('id').eq('user_id', currentUser.id).eq('promo_code', code).limit(1);
+      if (data && data.length > 0) return true;
+    } catch(e) {}
+  }
+
+  // Проверяем по email
+  var emailField = document.getElementById('customerEmail');
+  if (emailField && emailField.value.trim()) {
+    try {
+      var { data } = await db.from('orders').select('id').eq('customer_email', emailField.value.trim()).eq('promo_code', code).limit(1);
+      if (data && data.length > 0) return true;
+    } catch(e) {}
+  }
+
+  return false;
+}
+
+// --- Get Effective Delivery Price (free from 3000₽) ---
+function getEffectiveDeliveryPrice(subtotal) {
+  var selected = document.querySelector('input[name="delivery"]:checked');
+  var basePrice = selected ? parseInt(selected.dataset.price, 10) : 0;
+
+  // Бесплатная доставка от 3000 ₽ (после скидки)
+  var afterDiscount = appliedPromo ? subtotal * (1 - appliedPromo.discount) : subtotal;
+  if (afterDiscount >= FREE_DELIVERY_THRESHOLD && basePrice > 0) {
+    return 0;
+  }
+  return basePrice;
+}
+
 // --- Render Order Summary ---
 async function renderOrderSummary() {
-  const itemsContainer = document.getElementById('orderItems');
-  const subtotalEl = document.getElementById('summarySubtotal');
-  const deliveryEl = document.getElementById('summaryDelivery');
-  const totalEl = document.getElementById('summaryTotal');
+  var itemsContainer = document.getElementById('orderItems');
+  var subtotalEl = document.getElementById('summarySubtotal');
+  var discountEl = document.getElementById('summaryDiscount');
+  var deliveryEl = document.getElementById('summaryDelivery');
+  var totalEl = document.getElementById('summaryTotal');
 
   if (!itemsContainer) return;
 
-  // Ensure products loaded from Supabase
   await fetchAllProducts();
 
-  const items = getCartItems();
-  const subtotal = getCartTotal();
+  var items = getCartItems();
+  var subtotal = getCartTotal();
 
   if (items.length === 0) {
     itemsContainer.innerHTML = '<p style="color: var(--gray); font-size: 0.9rem;">Корзина пуста</p>';
   } else {
-    let html = '';
-    items.forEach(item => {
+    var html = '';
+    items.forEach(function(item) {
       var imgUrl = item.image_url || item.imageUrl;
       var imgHtml = imgUrl
         ? '<img src="' + imgUrl + '" alt="' + item.name + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">'
@@ -83,64 +165,109 @@ async function renderOrderSummary() {
     itemsContainer.innerHTML = html;
   }
 
-  const deliveryPrice = getSelectedDeliveryPrice();
+  // Calculate discount
+  var discountAmount = 0;
+  if (appliedPromo) {
+    discountAmount = Math.round(subtotal * appliedPromo.discount);
+  }
+  var subtotalAfterDiscount = subtotal - discountAmount;
+  var deliveryPrice = getEffectiveDeliveryPrice(subtotal);
+  var total = subtotalAfterDiscount + deliveryPrice;
 
   if (subtotalEl) {
     subtotalEl.innerHTML = '<span>Товары</span><span>' + formatPrice(subtotal) + '</span>';
+  }
+  if (discountEl) {
+    if (appliedPromo) {
+      discountEl.innerHTML = '<span>Скидка ' + Math.round(appliedPromo.discount * 100) + '%</span><span>−' + formatPrice(discountAmount) + '</span>';
+      discountEl.style.display = '';
+    } else {
+      discountEl.style.display = 'none';
+    }
   }
   if (deliveryEl) {
     deliveryEl.innerHTML = '<span>Доставка</span><span>' + (deliveryPrice === 0 ? 'бесплатно' : formatPrice(deliveryPrice)) + '</span>';
   }
   if (totalEl) {
-    totalEl.innerHTML = '<span>Итого</span><span>' + formatPrice(subtotal + deliveryPrice) + '</span>';
+    totalEl.innerHTML = '<span>Итого</span><span>' + formatPrice(total) + '</span>';
+  }
+
+  // Update free delivery note
+  updateDeliveryPriceLabels(subtotal);
+}
+
+// --- Update delivery price labels (free from 3000₽) ---
+function updateDeliveryPriceLabels(subtotal) {
+  var afterDiscount = appliedPromo ? subtotal * (1 - appliedPromo.discount) : subtotal;
+  var isFree = afterDiscount >= FREE_DELIVERY_THRESHOLD;
+  var freeNote = document.getElementById('freeDeliveryNote');
+
+  // Update radio labels
+  var labels = document.querySelectorAll('.delivery-price-label');
+  labels.forEach(function(label) {
+    var radio = label.closest('.delivery-option').querySelector('input[type="radio"]');
+    var basePrice = parseInt(radio.dataset.price, 10);
+    if (basePrice > 0) {
+      label.textContent = isFree ? ' — бесплатно' : ' — ' + basePrice + ' ₽';
+    }
+  });
+
+  if (freeNote) {
+    freeNote.style.display = isFree ? 'block' : 'none';
+    if (isFree) freeNote.textContent = 'Бесплатная доставка при заказе от 3 000 ₽!';
   }
 }
 
-// --- Get Selected Delivery Price ---
+// --- Get Selected Delivery Price (for compatibility) ---
 function getSelectedDeliveryPrice() {
-  const selected = document.querySelector('input[name="delivery"]:checked');
-  return selected ? parseInt(selected.dataset.price, 10) : 0;
+  var subtotal = getCartTotal();
+  return getEffectiveDeliveryPrice(subtotal);
 }
 
 // --- Delivery Logic ---
 function handleDeliveryChange() {
-  const selected = document.querySelector('input[name="delivery"]:checked');
+  var selected = document.querySelector('input[name="delivery"]:checked');
   if (!selected) return;
 
-  const method = selected.value;
-  const cityField = document.getElementById('city');
-  const addressField = document.getElementById('address');
-  const apartmentField = document.getElementById('apartment');
-  const postalCodeField = document.getElementById('postalCode');
-  const courierNote = document.getElementById('courierNote');
-  const pickupInfo = document.getElementById('pickupInfo');
-  const addressSection = document.getElementById('addressSection');
+  var method = selected.value;
+  var courierNote = document.getElementById('courierNote');
+  var pickupInfo = document.getElementById('pickupInfo');
+  var addressSection = document.getElementById('addressSection');
+  var addressTitle = document.getElementById('addressSectionTitle');
+  var courierFields = document.getElementById('courierFields');
+  var pickupPointFields = document.getElementById('pickupPointFields');
+  var addressField = document.getElementById('address');
+  var pickupAddressField = document.getElementById('pickupAddress');
+  var cityField = document.getElementById('city');
 
   // Reset
   if (courierNote) courierNote.style.display = 'none';
   if (pickupInfo) pickupInfo.style.display = 'none';
 
   if (method === 'self') {
-    // Самовывоз: скрыть поля адреса, показать адрес самовывоза
     if (addressSection) addressSection.style.display = 'none';
     if (pickupInfo) pickupInfo.style.display = 'block';
+    // Remove required from address fields
+    if (addressField) addressField.removeAttribute('required');
+    if (pickupAddressField) pickupAddressField.removeAttribute('required');
+    if (cityField) cityField.removeAttribute('required');
   } else if (method === 'courier') {
-    // Курьер: только по Самаре
     if (addressSection) addressSection.style.display = '';
-    if (cityField) {
-      cityField.value = 'Самара';
-      cityField.readOnly = true;
-    }
-    if (addressField) addressField.readOnly = false;
+    if (addressTitle) addressTitle.textContent = 'Адрес доставки';
+    if (courierFields) courierFields.style.display = '';
+    if (pickupPointFields) pickupPointFields.style.display = 'none';
+    if (addressField) addressField.setAttribute('required', '');
+    if (pickupAddressField) pickupAddressField.removeAttribute('required');
+    if (cityField) cityField.removeAttribute('required');
     if (courierNote) courierNote.style.display = 'block';
-  } else {
-    // Пункт выдачи: свободный ввод
+  } else if (method === 'pickup_point') {
     if (addressSection) addressSection.style.display = '';
-    if (cityField) {
-      cityField.readOnly = false;
-      if (cityField.value === 'Самара') cityField.value = '';
-    }
-    if (addressField) addressField.readOnly = false;
+    if (addressTitle) addressTitle.textContent = 'Пункт выдачи';
+    if (courierFields) courierFields.style.display = 'none';
+    if (pickupPointFields) pickupPointFields.style.display = '';
+    if (addressField) addressField.removeAttribute('required');
+    if (pickupAddressField) pickupAddressField.setAttribute('required', '');
+    if (cityField) cityField.setAttribute('required', '');
   }
 
   renderOrderSummary();
@@ -149,9 +276,9 @@ function handleDeliveryChange() {
 // --- Telegram Notification (через серверную функцию) ---
 async function sendTelegramNotification(order) {
   var DELIVERY_NAMES = {
-    courier: 'Курьер (350 руб.)',
-    pickup_point: 'Пункт выдачи (200 руб.)',
-    self: 'Самовывоз (бесплатно)'
+    courier: 'Курьер по Самаре',
+    pickup_point: 'Пункт выдачи',
+    self: 'Самовывоз'
   };
 
   var itemsList = order.items.map(function(item) {
@@ -164,19 +291,29 @@ async function sendTelegramNotification(order) {
     '\u{1F4DE} <b>Телефон:</b> ' + escapeHtml(order.customer.phone) + '\n' +
     '\u{1F4E7} <b>Email:</b> ' + escapeHtml(order.customer.email) + '\n\n' +
     '\u{1F6D2} <b>Товары:</b>\n' + itemsList + '\n\n' +
-    '\u{1F69A} <b>Доставка:</b> ' + (DELIVERY_NAMES[order.delivery.method] || order.delivery.method) + '\n';
+    '\u{1F69A} <b>Доставка:</b> ' + (DELIVERY_NAMES[order.delivery.method] || order.delivery.method) +
+    ' (' + (order.delivery.price === 0 ? 'бесплатно' : order.delivery.price + ' руб.') + ')\n';
 
-  if (order.delivery.method !== 'self') {
-    text += '\u{1F4CD} <b>Адрес:</b> ' + escapeHtml(order.address.city) + ', ' + escapeHtml(order.address.address);
+  if (order.delivery.method === 'courier') {
+    text += '\u{1F4CD} <b>Адрес:</b> г. Самара, ' + escapeHtml(order.address.address);
     if (order.address.apartment) text += ', кв. ' + escapeHtml(order.address.apartment);
     text += '\n';
+  } else if (order.delivery.method === 'pickup_point') {
+    text += '\u{1F4CD} <b>ПВЗ:</b> ' + escapeHtml(order.address.city) + ', ' + escapeHtml(order.address.address) + '\n';
   } else {
     text += '\u{1F4CD} <b>Самовывоз:</b> г. Самара, ул. Мориса Тореза 13А\n';
   }
 
+  if (order.promo) {
+    text += '\u{1F3F7} <b>Промокод:</b> ' + escapeHtml(order.promo.code) + ' (-' + Math.round(order.promo.discount * 100) + '%)\n';
+  }
+
+  if (order.comment) {
+    text += '\u{1F4AC} <b>Комментарий:</b> ' + escapeHtml(order.comment) + '\n';
+  }
+
   text += '\n\u{1F4B0} <b>Итого:</b> ' + order.total + ' руб.';
 
-  // Отправляем через серверную Postgres-функцию (токен скрыт в БД)
   await sendTelegramViaRPC(text);
 }
 
@@ -188,29 +325,26 @@ function escapeHtml(str) {
 
 // --- Form Validation ---
 function validateCheckoutForm() {
-  const form = document.getElementById('checkoutForm');
+  var form = document.getElementById('checkoutForm');
   if (!form) return false;
 
-  const selected = document.querySelector('input[name="delivery"]:checked');
-  const isSelfPickup = selected && selected.value === 'self';
+  var requiredFields = form.querySelectorAll('[required]');
+  var isValid = true;
 
-  const requiredFields = form.querySelectorAll('[required]');
-  let isValid = true;
-
-  requiredFields.forEach(field => {
+  requiredFields.forEach(function(field) {
     field.style.borderColor = '';
 
-    // Skip address fields for self-pickup
-    if (isSelfPickup && (field.id === 'city' || field.id === 'address')) return;
+    // Skip hidden fields
+    if (field.offsetParent === null) return;
 
-    const value = field.value.trim();
+    var value = field.value.trim();
     if (!value) {
       field.style.borderColor = 'var(--coral)';
       isValid = false;
     }
 
     if (field.type === 'email' && value) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(value)) {
         field.style.borderColor = 'var(--coral)';
         isValid = false;
@@ -218,7 +352,7 @@ function validateCheckoutForm() {
     }
 
     if (field.type === 'tel' && value) {
-      const phoneClean = value.replace(/[\s\-\(\)]/g, '');
+      var phoneClean = value.replace(/[\s\-\(\)]/g, '');
       if (phoneClean.length < 10) {
         field.style.borderColor = 'var(--coral)';
         isValid = false;
@@ -233,6 +367,25 @@ function validateCheckoutForm() {
   }
 
   return isValid;
+}
+
+// --- Save Consent to Supabase ---
+async function saveConsent(order) {
+  if (!db) return;
+  try {
+    await db.from('consents').insert({
+      order_id: order.id,
+      user_id: order.user_id || null,
+      customer_email: order.customer.email,
+      customer_name: order.customer.name,
+      consent_type: 'checkout_checkbox',
+      consent_text: 'Я согласен(на) с политикой обработки персональных данных и пользовательским соглашением',
+      ip_address: null,
+      granted_at: new Date().toISOString()
+    });
+  } catch(e) {
+    console.error('Consent save error:', e);
+  }
 }
 
 // --- Handle Form Submit ---
@@ -250,8 +403,8 @@ async function handleCheckoutSubmit(e) {
     return;
   }
 
-  // Перепроверяем stock перед оформлением (актуальные данные)
-  _supabaseProducts = null; // сбрасываем кэш
+  // Перепроверяем stock перед оформлением
+  _supabaseProducts = null;
   await fetchAllProducts();
   var stockIssues = [];
   items.forEach(function(item) {
@@ -267,24 +420,27 @@ async function handleCheckoutSubmit(e) {
   }
 
   var form = document.getElementById('checkoutForm');
-  const deliveryPrice = getSelectedDeliveryPrice();
-  const subtotal = getCartTotal();
-  const deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
+  var subtotal = getCartTotal();
+  var discountAmount = appliedPromo ? Math.round(subtotal * appliedPromo.discount) : 0;
+  var subtotalAfterDiscount = subtotal - discountAmount;
+  var deliveryPrice = getEffectiveDeliveryPrice(subtotal);
+  var deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
 
-  var city, address, apartment, postalCode;
+  var city, address;
   if (deliveryMethod === 'self') {
     city = 'Самара';
     address = 'ул. Мориса Тореза 13А';
-    apartment = '';
-    postalCode = '';
+  } else if (deliveryMethod === 'courier') {
+    city = 'Самара';
+    address = form.querySelector('#address').value.trim();
   } else {
     city = form.querySelector('#city').value.trim();
-    address = form.querySelector('#address').value.trim();
-    apartment = form.querySelector('#apartment').value.trim();
-    postalCode = form.querySelector('#postalCode').value.trim();
+    address = form.querySelector('#pickupAddress').value.trim();
   }
 
-  const order = {
+  var comment = (form.querySelector('#orderComment') || {}).value || '';
+
+  var order = {
     id: 'LUMS-' + Date.now(),
     timestamp: new Date().toISOString(),
     user_id: (typeof currentUser !== 'undefined' && currentUser) ? currentUser.id : null,
@@ -296,25 +452,25 @@ async function handleCheckoutSubmit(e) {
     address: {
       city: city,
       address: address,
-      apartment: apartment,
-      postalCode: postalCode,
+      apartment: '',
+      postalCode: '',
     },
     delivery: {
       method: deliveryMethod,
       price: deliveryPrice,
     },
-    items: items.map(item => ({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      qty: item.qty,
-    })),
+    promo: appliedPromo ? { code: appliedPromo.code, discount: appliedPromo.discount } : null,
+    comment: comment.trim(),
+    items: items.map(function(item) {
+      return { id: item.id, name: item.name, price: item.price, qty: item.qty };
+    }),
     subtotal: subtotal,
-    total: subtotal + deliveryPrice,
+    discount: discountAmount,
+    total: subtotalAfterDiscount + deliveryPrice,
     status: 'pending',
   };
 
-  // Save to Supabase (or localStorage fallback)
+  // Save to Supabase
   var result = await saveOrderToSupabase(order);
 
   if (!result.success) {
@@ -322,7 +478,10 @@ async function handleCheckoutSubmit(e) {
     return;
   }
 
-  // Уменьшаем stock для товаров в наличии
+  // Save consent record
+  await saveConsent(order);
+
+  // Уменьшаем stock
   await decreaseStock(order.items);
 
   // Send Telegram notification
@@ -341,10 +500,7 @@ async function handleCheckoutSubmit(e) {
 
 // --- Init ---
 document.addEventListener('DOMContentLoaded', async function() {
-  // Load products first
   await fetchAllProducts();
-
-  // Render order summary
   await renderOrderSummary();
 
   // Listen for delivery method changes

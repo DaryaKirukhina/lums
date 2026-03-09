@@ -70,39 +70,6 @@
             </div>
           </div>
 
-          <!-- Delivery Address -->
-          <div class="checkout-form-section" id="addressSection">
-            <h3>Адрес доставки</h3>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="city">Город *</label>
-                <input type="text" id="city" name="city" required placeholder="Самара">
-              </div>
-              <div class="form-group">
-                <label for="postalCode">Индекс</label>
-                <input type="text" id="postalCode" name="postalCode" placeholder="443000">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group full">
-                <label for="address">Адрес *</label>
-                <input type="text" id="address" name="address" required placeholder="Улица, дом, корпус">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="apartment">Квартира / офис</label>
-                <input type="text" id="apartment" name="apartment" placeholder="Кв. 1">
-              </div>
-            </div>
-          </div>
-
-          <!-- Pickup Info (shown when self-pickup selected) -->
-          <div id="pickupInfo" style="display:none; background: var(--bg); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px;">
-            <p style="font-weight: 500; margin-bottom: 4px;">📍 Адрес самовывоза:</p>
-            <p style="color: var(--gray); font-size: 0.9rem;">г. Самара, ул. Мориса Тореза 13А</p>
-          </div>
-
           <!-- Delivery Method -->
           <div class="checkout-form-section">
             <h3>Способ доставки</h3>
@@ -110,15 +77,15 @@
               <label class="delivery-option">
                 <input type="radio" name="delivery" value="courier" data-price="350" checked>
                 <div>
-                  <strong>Курьер</strong>
-                  <span style="color: var(--gray); font-size: 0.85rem;"> — 350 ₽</span>
+                  <strong>Курьер по Самаре</strong>
+                  <span class="delivery-price-label" style="color: var(--gray); font-size: 0.85rem;"> — 350 ₽</span>
                 </div>
               </label>
               <label class="delivery-option">
-                <input type="radio" name="delivery" value="pickup_point" data-price="200">
+                <input type="radio" name="delivery" value="pickup_point" data-price="350">
                 <div>
-                  <strong>Пункт выдачи</strong>
-                  <span style="color: var(--gray); font-size: 0.85rem;"> — 200 ₽</span>
+                  <strong>Пункт выдачи (СДЭК / Ozon / Яндекс)</strong>
+                  <span class="delivery-price-label" style="color: var(--gray); font-size: 0.85rem;"> — 350 ₽</span>
                 </div>
               </label>
               <label class="delivery-option">
@@ -130,6 +97,61 @@
               </label>
             </div>
             <p id="courierNote" style="display:none; font-size: 0.8rem; color: var(--coral); margin-top: 8px;">Курьерская доставка доступна только по г. Самара</p>
+            <p id="freeDeliveryNote" style="display:none; font-size: 0.8rem; color: var(--green, #2d8a4e); margin-top: 8px;">Бесплатная доставка при заказе от 3 000 ₽</p>
+          </div>
+
+          <!-- Delivery Address (courier) -->
+          <div class="checkout-form-section" id="addressSection">
+            <h3 id="addressSectionTitle">Адрес доставки</h3>
+            <div id="courierFields">
+              <div class="form-row">
+                <div class="form-group full">
+                  <label for="address">Адрес *</label>
+                  <input type="text" id="address" name="address" required placeholder="Улица, дом, корпус">
+                </div>
+              </div>
+            </div>
+            <div id="pickupPointFields" style="display:none;">
+              <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 12px;">Укажите адрес пункта выдачи СДЭК, Ozon или Яндекс Маркет, куда вам удобно получить заказ</p>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="city">Город *</label>
+                  <input type="text" id="city" name="city" required placeholder="Москва">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group full">
+                  <label for="pickupAddress">Адрес пункта выдачи *</label>
+                  <input type="text" id="pickupAddress" name="pickupAddress" placeholder="ул. Ленина, д. 10 (СДЭК)">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pickup Info (shown when self-pickup selected) -->
+          <div id="pickupInfo" style="display:none; background: var(--bg); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px;">
+            <p style="font-weight: 500; margin-bottom: 4px;">Адрес самовывоза:</p>
+            <p style="color: var(--gray); font-size: 0.9rem;">г. Самара, ул. Мориса Тореза 13А</p>
+          </div>
+
+          <!-- Promo Code -->
+          <div class="checkout-form-section">
+            <h3>Промокод</h3>
+            <div class="form-row" style="align-items:flex-end;gap:8px;">
+              <div class="form-group" style="flex:1;margin-bottom:0;">
+                <input type="text" id="promoCode" placeholder="Введите промокод" style="text-transform:lowercase;">
+              </div>
+              <button type="button" class="btn btn-outline btn-sm" id="applyPromoBtn" onclick="applyPromoCode()" style="height:44px;white-space:nowrap;">Применить</button>
+            </div>
+            <p id="promoResult" style="display:none; font-size: 0.85rem; margin-top: 8px;"></p>
+          </div>
+
+          <!-- Comment -->
+          <div class="checkout-form-section">
+            <h3>Комментарий к заказу</h3>
+            <div class="form-group" style="margin-bottom:0;">
+              <textarea id="orderComment" rows="3" placeholder="Пожелания, уточнения по доставке..." style="width:100%;resize:vertical;"></textarea>
+            </div>
           </div>
 
           <!-- Consent -->
@@ -150,6 +172,10 @@
           <div id="orderItems"></div>
           <div class="cart-summary-row" id="summarySubtotal">
             <span>Товары</span>
+            <span>0 ₽</span>
+          </div>
+          <div class="cart-summary-row" id="summaryDiscount" style="display:none;color:var(--green,#2d8a4e);">
+            <span>Скидка 15%</span>
             <span>0 ₽</span>
           </div>
           <div class="cart-summary-row" id="summaryDelivery">
@@ -197,12 +223,12 @@
           <h4>Контакты</h4>
           <ul>
             <li><a href="tel:+79058445098">+7 (905) 844-50-98</a></li>
-            <li><a href="mailto:hello@lumscandle.ru">hello@lumscandle.ru</a></li>
+            <li><a href="https://t.me/KiryukhinaD">Telegram</a></li>
           </ul>
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2026 ЛЮМС. Все права защищены.</p>
+        <p>&copy; 2026 ЛЮМС. Самозанятая Кирюхина Дарья Олеговна. ИНН 561443012986</p>
         <div class="footer-bottom-links">
           <a href="../privacy/">Политика конфиденциальности</a>
           <a href="../terms/">Пользовательское соглашение</a>
