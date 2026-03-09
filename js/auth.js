@@ -36,7 +36,8 @@ async function loadUserProfile() {
 }
 
 // --- Send magic link ---
-async function sendMagicLink(email) {
+async function sendMagicLink(email, attempt) {
+  attempt = attempt || 1;
   initSupabase();
   if (!db) return { success: false, error: 'Supabase не подключен' };
 
@@ -44,17 +45,28 @@ async function sendMagicLink(email) {
   var baseUrl = window.location.origin;
   var redirectUrl = baseUrl + '/account/';
 
-  var { error } = await db.auth.signInWithOtp({
-    email: email,
-    options: {
-      emailRedirectTo: redirectUrl
-    }
-  });
+  try {
+    var { error } = await db.auth.signInWithOtp({
+      email: email,
+      options: {
+        emailRedirectTo: redirectUrl
+      }
+    });
 
-  if (error) {
-    return { success: false, error: error.message };
+    if (error) {
+      console.error('Magic link error:', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  } catch(e) {
+    console.error('Magic link exception (attempt ' + attempt + '):', e);
+    // Retry once on network failure (Safari "Load failed")
+    if (attempt < 2) {
+      await new Promise(function(r) { setTimeout(r, 1000); });
+      return sendMagicLink(email, attempt + 1);
+    }
+    return { success: false, error: 'Не удалось отправить ссылку. Проверьте интернет-соединение и попробуйте ещё раз.' };
   }
-  return { success: true };
 }
 
 // --- Sign out ---

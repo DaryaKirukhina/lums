@@ -110,11 +110,11 @@
   <div class="notification" id="notification"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../js/config.js?v=4"></script>
-  <script src="../js/supabase.js?v=4"></script>
-  <script src="../js/main.js?v=4"></script>
-  <script src="../js/cart.js?v=4"></script>
-  <script src="../js/auth.js?v=4"></script>
+  <script src="../js/config.js?v=5"></script>
+  <script src="../js/supabase.js?v=5"></script>
+  <script src="../js/main.js?v=5"></script>
+  <script src="../js/cart.js?v=5"></script>
+  <script src="../js/auth.js?v=5"></script>
   <script>
     // If already logged in, redirect to account
     document.addEventListener('DOMContentLoaded', async function() {
@@ -138,20 +138,28 @@
       btn.disabled = true;
       btn.textContent = 'Отправка...';
 
-      var result = await sendMagicLink(email);
+      try {
+        var result = await sendMagicLink(email);
 
-      if (!result.success) {
-        errorEl.textContent = result.error || 'Ошибка отправки. Попробуйте позже.';
+        if (!result.success) {
+          errorEl.textContent = result.error || 'Ошибка отправки. Попробуйте позже.';
+          errorEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Получить ссылку для входа';
+          return;
+        }
+
+        // Show success
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('sentEmail').textContent = email;
+        document.getElementById('loginSuccess').style.display = 'block';
+      } catch(err) {
+        console.error('Login error:', err);
+        errorEl.textContent = 'Ошибка отправки. Попробуйте позже.';
         errorEl.style.display = 'block';
         btn.disabled = false;
         btn.textContent = 'Получить ссылку для входа';
-        return;
       }
-
-      // Show success
-      document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('sentEmail').textContent = email;
-      document.getElementById('loginSuccess').style.display = 'block';
     });
 
     function showLoginForm() {
