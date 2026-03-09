@@ -69,7 +69,7 @@
       imageHTML = `<img src="${imageUrl}" alt="${product.name}">`;
     } else {
       const placeholderClass = product.placeholder || ('p' + ((product.id % 8) + 1));
-      imageHTML = `<div class="placeholder ${placeholderClass}">🕯️</div>`;
+      imageHTML = `<div class="placeholder ${placeholderClass}">Фото<br>скоро</div>`;
     }
 
     card.innerHTML = `

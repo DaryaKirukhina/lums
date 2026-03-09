@@ -26,7 +26,7 @@
  *       },
  *       "confirmation": {
  *         "type": "redirect",
- *         "return_url": "https://lums.ru/order-success"
+ *         "return_url": "https://lumscandle.ru/order-success"
  *       },
  *       "capture": true,
  *       "description": "Заказ №123 в магазине ЛЮМС",
@@ -226,6 +226,12 @@ function validateCheckoutForm() {
     }
   });
 
+  // Check consent
+  var consentBox = document.getElementById('consentCheckbox');
+  if (consentBox && !consentBox.checked) {
+    isValid = false;
+  }
+
   return isValid;
 }
 
@@ -345,6 +351,15 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   // Apply initial delivery state
   handleDeliveryChange();
+
+  // Consent checkbox
+  var consentBox = document.getElementById('consentCheckbox');
+  var submitBtn = document.getElementById('submitBtn');
+  if (consentBox && submitBtn) {
+    consentBox.addEventListener('change', function() {
+      submitBtn.disabled = !consentBox.checked;
+    });
+  }
 
   // Form submit
   var form = document.getElementById('checkoutForm');

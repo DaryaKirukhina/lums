@@ -129,8 +129,16 @@
             <p id="courierNote" style="display:none; font-size: 0.8rem; color: var(--coral); margin-top: 8px;">Курьерская доставка доступна только по г. Самара</p>
           </div>
 
+          <!-- Consent -->
+          <div class="checkout-consent">
+            <label class="consent-label">
+              <input type="checkbox" id="consentCheckbox" required>
+              <span>Я согласен(на) с <a href="../privacy/" target="_blank">политикой обработки персональных данных</a> и <a href="../terms/" target="_blank">пользовательским соглашением</a></span>
+            </label>
+          </div>
+
           <!-- Submit -->
-          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Оформить заказ</button>
+          <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" style="width: 100%;" disabled>Оформить заказ</button>
         </form>
 
         <!-- Right: Order Summary -->
@@ -186,7 +194,7 @@
           <h4>Контакты</h4>
           <ul>
             <li><a href="tel:+79058445098">+7 (905) 844-50-98</a></li>
-            <li><a href="mailto:hello@lums.ru">hello@lums.ru</a></li>
+            <li><a href="mailto:hello@lumscandle.ru">hello@lumscandle.ru</a></li>
           </ul>
         </div>
       </div>
