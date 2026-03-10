@@ -470,11 +470,19 @@ async function handleCheckoutSubmit(e) {
     status: 'pending',
   };
 
+  // Disable submit button
+  var submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Оформление...';
+  }
+
   // Save to Supabase
   var result = await saveOrderToSupabase(order);
 
   if (!result.success) {
     showNotification('Ошибка при сохранении заказа. Попробуйте ещё раз.');
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Оформить заказ'; }
     return;
   }
 
@@ -487,15 +495,56 @@ async function handleCheckoutSubmit(e) {
   // Send Telegram notification
   await sendTelegramNotification(order);
 
-  // Send order confirmation email
-  await sendOrderEmail(order);
+  // --- YooKassa Payment ---
+  try {
+    if (submitBtn) submitBtn.textContent = 'Перенаправление на оплату...';
 
-  showNotification('Заказ успешно оформлен! Спасибо за покупку.');
-  clearCart();
+    var session = await db.auth.getSession();
+    var token = session.data.session.access_token;
 
-  setTimeout(function() {
-    window.location.href = '/?order=success';
-  }, 2000);
+    var payResponse = await fetch(CONFIG.SUPABASE_URL + '/functions/v1/create-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token,
+      },
+      body: JSON.stringify({
+        order_id: order.id,
+        amount: order.total,
+        description: 'Заказ ' + order.id + ' — ЛЮМС',
+        customer_email: order.customer.email,
+        items: order.items.map(function(item) {
+          return { name: item.name, price: item.price, qty: item.qty };
+        }),
+      }),
+    });
+
+    var payData = await payResponse.json();
+
+    if (payData.confirmation_url) {
+      clearCart();
+      window.location.href = payData.confirmation_url;
+      return;
+    } else {
+      console.error('Payment error:', payData);
+      // Order saved but payment failed — still notify
+      showNotification('Заказ сохранён, но оплата временно недоступна. Мы свяжемся с вами.');
+      await sendOrderEmail(order);
+      clearCart();
+      setTimeout(function() {
+        window.location.href = '../order-success/?order_id=' + order.id + '&payment=pending';
+      }, 2000);
+      return;
+    }
+  } catch(payErr) {
+    console.error('Payment exception:', payErr);
+    showNotification('Заказ сохранён, но оплата временно недоступна. Мы свяжемся с вами.');
+    await sendOrderEmail(order);
+    clearCart();
+    setTimeout(function() {
+      window.location.href = '../order-success/?order_id=' + order.id + '&payment=pending';
+    }, 2000);
+  }
 }
 
 // --- Init ---

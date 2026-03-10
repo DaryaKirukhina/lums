@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Заказ оформлен — ЛЮМС</title>
+  <meta name="description" content="Спасибо за заказ — ЛЮМС.">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css?v=5">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container header-inner">
+      <a href="../" class="logo">ЛЮМС</a>
+      <nav class="nav" id="nav">
+        <a href="../">Главная</a>
+        <a href="../catalog/">Каталог</a>
+        <a href="../about/">О нас</a>
+        <a href="../contacts/">Контакты</a>
+      </nav>
+      <div class="header-actions">
+        <a href="../cart/" class="cart-link" aria-label="Корзина">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-count" id="cartCount" style="display:none;">0</span>
+        </a>
+        <a href="../account/" class="account-link" data-account-url="../account/" data-login-url="../login/" aria-label="Личный кабинет">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </a>
+        <div class="burger" id="burger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Success Content -->
+  <section style="padding: 120px 0 80px; text-align: center; min-height: 60vh; display: flex; align-items: center;">
+    <div class="container">
+      <div id="successContent" style="max-width: 560px; margin: 0 auto;">
+        <div style="font-size: 3rem; margin-bottom: 20px;">&#10003;</div>
+        <h1 style="margin-bottom: 12px;" id="successTitle">Спасибо за заказ!</h1>
+        <p style="color: var(--gray); font-size: 1.05rem; margin-bottom: 8px;" id="successMessage">
+          Ваш заказ успешно оформлен и оплачен.
+        </p>
+        <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 32px;" id="orderIdText"></p>
+        <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 32px;">
+          Мы отправим подтверждение на вашу почту и свяжемся для уточнения деталей доставки.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <a href="../account/" class="btn btn-primary">Мои заказы</a>
+          <a href="../catalog/" class="btn btn-outline">Продолжить покупки</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="../" class="logo">ЛЮМС</a>
+          <p>Натуральные свечи ручной работы. Создаём уют и атмосферу в каждом доме с 2026 года.</p>
+          <p style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:12px;">Самозанятая Кирюхина Дарья Олеговна<br>ИНН 561443012986</p>
+        </div>
+        <div>
+          <h4>Каталог</h4>
+          <ul>
+            <li><a href="../catalog/?category=aromatic">Ароматические</a></li>
+            <li><a href="../catalog/?category=decorative">Декоративные</a></li>
+            <li><a href="../catalog/?category=gift">Подарочные</a></li>
+            <li><a href="../catalog/?category=interior">Для интерьера</a></li>
+            <li><a href="../catalog/?category=seasonal">Сезонные</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Информация</h4>
+          <ul>
+            <li><a href="../about/">О нас</a></li>
+            <li><a href="../contacts/">Контакты</a></li>
+            <li><a href="#">Доставка и оплата</a></li>
+            <li><a href="#">Обмен и возврат</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Контакты</h4>
+          <ul>
+            <li><a href="tel:+79058445098">+7 (905) 844-50-98</a></li>
+            <li><a href="https://t.me/KiryukhinaD">Telegram</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 ЛЮМС. Самозанятая Кирюхина Дарья Олеговна. ИНН 561443012986</p>
+        <div class="footer-bottom-links">
+          <a href="../privacy/">Политика конфиденциальности</a>
+          <a href="../terms/">Пользовательское соглашение</a>
+          <a href="../cookies/">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cookie Banner -->
+  <div class="cookie-banner" id="cookieBanner">
+    <div class="cookie-banner-inner">
+      <p>Мы используем файлы cookie для улучшения работы сайта. Продолжая использование, вы соглашаетесь с нашей <a href="../cookies/">политикой cookies</a>.</p>
+      <div class="cookie-banner-actions">
+        <button class="btn btn-citrus btn-sm" onclick="acceptCookies()">Принять</button>
+        <button class="btn btn-outline btn-sm" onclick="declineCookies()">Отклонить</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification" id="notification"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js?v=5"></script>
+  <script src="../js/supabase.js?v=5"></script>
+  <script src="../js/main.js?v=5"></script>
+  <script src="../js/cart.js?v=5"></script>
+  <script src="../js/auth.js?v=5"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      var params = new URLSearchParams(window.location.search);
+      var orderId = params.get('order_id');
+      var paymentStatus = params.get('payment');
+
+      if (orderId) {
+        document.getElementById('orderIdText').textContent = 'Номер заказа: ' + orderId;
+      }
+
+      if (paymentStatus === 'pending') {
+        document.getElementById('successTitle').textContent = 'Заказ оформлен!';
+        document.getElementById('successMessage').textContent = 'Оплата будет обработана позже. Мы свяжемся с вами для подтверждения.';
+      }
+
+      // Check payment status via YooKassa if order came from redirect
+      if (orderId && paymentStatus !== 'pending') {
+        initSupabase();
+        if (db) {
+          try {
+            var { data } = await db.from('orders').select('payment_status').eq('id', orderId).single();
+            if (data && data.payment_status === 'succeeded') {
+              document.getElementById('successMessage').textContent = 'Ваш заказ успешно оформлен и оплачен.';
+            } else if (data && data.payment_status === 'pending') {
+              document.getElementById('successMessage').textContent = 'Оплата обрабатывается. Статус обновится в личном кабинете.';
+            }
+          } catch(e) {
+            console.error('Status check error:', e);
+          }
+        }
+
+        // Send order email (after successful payment redirect)
+        try {
+          if (db) {
+            var { data: orderData } = await db.from('orders')
+              .select('*, order_items(*)')
+              .eq('id', orderId)
+              .single();
+            if (orderData) {
+              await sendOrderEmail({
+                id: orderData.id,
+                customer: { email: orderData.customer_email, name: orderData.customer_name },
+                items: (orderData.order_items || []).map(function(i) {
+                  return { name: i.product_name, price: i.price, qty: i.quantity };
+                }),
+                total: orderData.total,
+              });
+            }
+          }
+        } catch(e) {
+          console.error('Email send error:', e);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
