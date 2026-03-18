@@ -992,6 +992,8 @@
     function openCropperForFiles(files) {
       cropperQueue = Array.from(files);
       croppedFiles = [];
+      // Clear file input so original uncropped files don't get uploaded
+      document.getElementById('fimage').value = '';
       processNextCrop();
     }
 
