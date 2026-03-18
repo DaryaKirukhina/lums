@@ -482,6 +482,78 @@
       border-color: var(--dark);
     }
 
+    /* --- Cost Cards --- */
+    .cost-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .cost-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .cost-card-header h3 {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    .cost-card-actions { display: flex; gap: 8px; }
+    .cost-card table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+    }
+    .cost-card table th {
+      text-align: left;
+      padding: 6px 8px;
+      border-bottom: 2px solid var(--dark);
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--gray);
+    }
+    .cost-card table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .cost-card-totals {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      padding-top: 12px;
+      border-top: 2px solid var(--dark);
+      font-size: 0.9rem;
+    }
+    .cost-card-totals strong { color: var(--coral); }
+
+    /* --- Ingredient Row in Modal --- */
+    .ingredient-row {
+      display: grid;
+      grid-template-columns: 1fr 80px 80px 30px;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .ingredient-row select, .ingredient-row input {
+      padding: 8px;
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+    }
+    .ingredient-row .remove-ingredient {
+      background: none;
+      border: none;
+      color: var(--coral);
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 0;
+    }
+    .td-unit-price { color: var(--coral); font-weight: 600; }
+
     /* --- Responsive --- */
     @media (max-width: 768px) {
       .admin-table-wrap { overflow-x: auto; }
@@ -489,6 +561,7 @@
       .modal-body .form-row { grid-template-columns: 1fr; }
       .admin-status { flex-direction: column; align-items: flex-start; }
       .admin-tabs { flex-direction: column; }
+      .ingredient-row { grid-template-columns: 1fr 70px 70px 30px; }
     }
   </style>
 </head>
@@ -540,6 +613,8 @@
       <button class="admin-tab active" onclick="switchTab('products')">Товары</button>
       <button class="admin-tab" onclick="switchTab('orders')">Заказы</button>
       <button class="admin-tab" onclick="switchTab('slides')">Слайдшоу</button>
+      <button class="admin-tab" onclick="switchTab('materials')">Материалы</button>
+      <button class="admin-tab" onclick="switchTab('costs')">Себестоимость</button>
     </div>
 
     <!-- TAB: Products -->
@@ -595,7 +670,147 @@
       <div id="slidesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;"></div>
       <p id="slidesEmpty" style="text-align:center;padding:40px 24px;color:var(--gray);font-size:0.9rem;">Нет слайдов. Добавьте фото для слайдшоу на главной странице.</p>
     </div>
+    <!-- TAB: Materials -->
+    <div class="admin-tab-panel" id="tab-materials">
+      <div class="admin-status">
+        <span class="product-count" id="materialsCount">0 материалов</span>
+        <button class="btn btn-primary btn-sm" onclick="openMaterialForm()">+ Добавить материал</button>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Название</th>
+              <th>Ед. изм.</th>
+              <th>Стоимость закупки</th>
+              <th>Объём закупки</th>
+              <th>Цена за 1 ед.</th>
+              <th>Поставщик</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="materialsTableBody">
+            <tr><td colspan="7"><div class="admin-empty"><div class="admin-empty-icon">&#128230;</div><p>Нет материалов. Добавьте первый.</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: Costs -->
+    <div class="admin-tab-panel" id="tab-costs">
+      <div class="admin-status">
+        <span class="product-count" id="costsCount">0 расчётов</span>
+        <button class="btn btn-primary btn-sm" onclick="openCostForm()">+ Рассчитать товар</button>
+      </div>
+      <div id="costsContainer"></div>
+    </div>
+
   </main>
+
+  <!-- Material Modal -->
+  <div class="modal-overlay" id="materialModalOverlay" onclick="if(event.target===this)closeMaterialModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="materialModalTitle">Добавить материал</h3>
+        <button class="modal-close" onclick="closeMaterialModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="materialForm" onsubmit="handleMaterialSubmit(event)">
+          <input type="hidden" id="matEditId">
+          <div class="form-group">
+            <label for="matName">Название *</label>
+            <input type="text" id="matName" required placeholder="Соевый воск">
+          </div>
+          <div class="form-group">
+            <label for="matUnit">Единица измерения *</label>
+            <select id="matUnit" required>
+              <option value="г">Граммы (г)</option>
+              <option value="мл">Миллилитры (мл)</option>
+              <option value="шт">Штуки (шт)</option>
+              <option value="м">Метры (м)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="matCost">Стоимость закупки (руб.) *</label>
+              <input type="number" id="matCost" min="0" step="0.01" required placeholder="1500">
+            </div>
+            <div class="form-group">
+              <label for="matVolume">Объём закупки *</label>
+              <input type="number" id="matVolume" min="0" step="0.01" required placeholder="1000">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Цена за 1 ед.: <strong id="matPricePerUnit">—</strong> руб.</label>
+          </div>
+          <div class="form-group">
+            <label for="matSupplier">Поставщик</label>
+            <input type="text" id="matSupplier" placeholder="Название магазина / ссылка">
+          </div>
+          <div class="modal-footer" style="padding:16px 0 0;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="closeMaterialModal()">Отмена</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="matSubmitBtn">Добавить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cost Calculator Modal -->
+  <div class="modal-overlay" id="costModalOverlay" onclick="if(event.target===this)closeCostModal()" style="z-index:1001;">
+    <div class="modal" style="max-width:680px;">
+      <div class="modal-header">
+        <h3 id="costModalTitle">Расчёт себестоимости</h3>
+        <button class="modal-close" onclick="closeCostModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="costForm" onsubmit="handleCostSubmit(event)">
+          <input type="hidden" id="costEditId">
+          <div class="form-group">
+            <label for="costProductName">Название товара *</label>
+            <input type="text" id="costProductName" required placeholder="Свеча 'Ваниль'">
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <label style="font-weight:600;margin-bottom:8px;display:block;">Компоненты:</label>
+            <div id="costIngredients"></div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="addCostIngredient()" style="margin-top:8px;">+ Добавить компонент</button>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="costLabor">Работа / прочее (руб.)</label>
+              <input type="number" id="costLabor" min="0" step="0.01" value="0" oninput="recalcCost()">
+            </div>
+            <div class="form-group">
+              <label for="costMarkup">Наценка (%)</label>
+              <input type="number" id="costMarkup" min="0" value="100" oninput="recalcCost()">
+            </div>
+          </div>
+
+          <div class="cost-summary" style="background:var(--vanilla);border-radius:var(--radius);padding:16px;margin:16px 0;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <span>Материалы:</span><strong id="costMaterialsTotal">0 руб.</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <span>Работа / прочее:</span><strong id="costLaborTotal">0 руб.</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;padding-top:8px;border-top:1px solid rgba(0,0,0,0.1);">
+              <span>Себестоимость:</span><strong id="costTotal">0 руб.</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span>Рекомендуемая цена (с наценкой):</span><strong id="costRetailPrice" style="color:var(--coral);">0 руб.</strong>
+            </div>
+          </div>
+
+          <div class="modal-footer" style="padding:16px 0 0;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="closeCostModal()">Отмена</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="costSubmitBtn">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal -->
   <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
@@ -1102,7 +1317,7 @@
 
     // Close modal on Escape key
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Escape') { closeModal(); closeMaterialModal(); closeCostModal(); }
     });
 
     /* ===== Tabs ===== */
@@ -1114,6 +1329,8 @@
       document.getElementById('tab-' + tabName).classList.add('active');
 
       if (tabName === 'orders' && adminOrders.length === 0) loadAdminOrders();
+      if (tabName === 'materials' && materials.length === 0) loadMaterials();
+      if (tabName === 'costs' && productCosts.length === 0) loadProductCosts();
     }
 
     /* ===== Orders Management ===== */
@@ -1322,7 +1539,6 @@
       try {
         var { error } = await db.from('hero_slides').delete().eq('id', id);
         if (error) throw error;
-        // Удаляем фото из Storage
         if (slide && slide.image_url) {
           await deleteProductImage(slide.image_url);
         }
@@ -1331,6 +1547,383 @@
       } catch(e) {
         console.error(e);
         notify('Ошибка удаления: ' + e.message, 'error');
+      }
+    }
+
+    /* ===== Materials Management ===== */
+    var materials = [];
+
+    async function loadMaterials() {
+      if (!isSupabaseConnected) {
+        document.getElementById('materialsTableBody').innerHTML = '<tr><td colspan="7"><div class="admin-empty"><p>Материалы доступны только при подключении к Supabase</p></div></td></tr>';
+        return;
+      }
+      try {
+        var { data, error } = await db.from('materials').select('*').order('name');
+        if (error) throw error;
+        materials = data || [];
+      } catch(e) {
+        console.error('Materials load error:', e);
+        materials = [];
+      }
+      renderMaterials();
+    }
+
+    function renderMaterials() {
+      var tbody = document.getElementById('materialsTableBody');
+      var countEl = document.getElementById('materialsCount');
+      countEl.textContent = materials.length + ' ' + pluralize(materials.length, 'материал', 'материала', 'материалов');
+
+      if (materials.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7"><div class="admin-empty"><div class="admin-empty-icon">&#128230;</div><p>Нет материалов. Добавьте первый.</p></div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = materials.map(function(m) {
+        var pricePerUnit = m.volume > 0 ? (m.cost / m.volume) : 0;
+        return '<tr>' +
+          '<td><strong>' + escapeHtml(m.name) + '</strong></td>' +
+          '<td>' + escapeHtml(m.unit) + '</td>' +
+          '<td>' + formatPrice(m.cost) + '</td>' +
+          '<td>' + m.volume + ' ' + escapeHtml(m.unit) + '</td>' +
+          '<td class="td-unit-price">' + pricePerUnit.toFixed(2) + ' руб./' + escapeHtml(m.unit) + '</td>' +
+          '<td>' + escapeHtml(m.supplier || '—') + '</td>' +
+          '<td>' +
+            '<button class="btn-edit" onclick="openEditMaterial(' + m.id + ')">&#9998;</button> ' +
+            '<button class="btn-delete" onclick="deleteMaterial(' + m.id + ')">&#10005;</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function openMaterialForm() {
+      document.getElementById('materialModalTitle').textContent = 'Добавить материал';
+      document.getElementById('matSubmitBtn').textContent = 'Добавить';
+      document.getElementById('materialForm').reset();
+      document.getElementById('matEditId').value = '';
+      document.getElementById('matPricePerUnit').textContent = '—';
+      document.getElementById('materialModalOverlay').classList.add('active');
+    }
+
+    function openEditMaterial(id) {
+      var m = materials.find(function(x) { return x.id === id; });
+      if (!m) return;
+      document.getElementById('materialModalTitle').textContent = 'Редактировать материал';
+      document.getElementById('matSubmitBtn').textContent = 'Сохранить';
+      document.getElementById('matEditId').value = m.id;
+      document.getElementById('matName').value = m.name;
+      document.getElementById('matUnit').value = m.unit;
+      document.getElementById('matCost').value = m.cost;
+      document.getElementById('matVolume').value = m.volume;
+      document.getElementById('matSupplier').value = m.supplier || '';
+      calcMatPrice();
+      document.getElementById('materialModalOverlay').classList.add('active');
+    }
+
+    function closeMaterialModal() {
+      document.getElementById('materialModalOverlay').classList.remove('active');
+    }
+
+    // Auto-calc price per unit
+    document.addEventListener('input', function(e) {
+      if (e.target.id === 'matCost' || e.target.id === 'matVolume') calcMatPrice();
+    });
+
+    function calcMatPrice() {
+      var cost = parseFloat(document.getElementById('matCost').value) || 0;
+      var volume = parseFloat(document.getElementById('matVolume').value) || 0;
+      var el = document.getElementById('matPricePerUnit');
+      el.textContent = volume > 0 ? (cost / volume).toFixed(2) : '—';
+    }
+
+    async function handleMaterialSubmit(e) {
+      e.preventDefault();
+      var editId = document.getElementById('matEditId').value;
+      var data = {
+        name: document.getElementById('matName').value.trim(),
+        unit: document.getElementById('matUnit').value,
+        cost: parseFloat(document.getElementById('matCost').value),
+        volume: parseFloat(document.getElementById('matVolume').value),
+        supplier: document.getElementById('matSupplier').value.trim() || null,
+      };
+
+      try {
+        if (editId) {
+          var { error } = await db.from('materials').update(data).eq('id', parseInt(editId));
+          if (error) throw error;
+          notify('Материал обновлён');
+        } else {
+          var { error } = await db.from('materials').insert(data);
+          if (error) throw error;
+          notify('Материал добавлен');
+        }
+        closeMaterialModal();
+        await loadMaterials();
+      } catch(err) {
+        console.error(err);
+        notify('Ошибка: ' + err.message, 'error');
+      }
+    }
+
+    async function deleteMaterial(id) {
+      if (!confirm('Удалить этот материал?')) return;
+      try {
+        var { error } = await db.from('materials').delete().eq('id', id);
+        if (error) throw error;
+        notify('Материал удалён');
+        await loadMaterials();
+      } catch(e) {
+        notify('Ошибка удаления: ' + e.message, 'error');
+      }
+    }
+
+    /* ===== Product Cost Calculator ===== */
+    var productCosts = [];
+
+    async function loadProductCosts() {
+      if (!isSupabaseConnected) {
+        document.getElementById('costsContainer').innerHTML = '<div class="admin-empty"><p>Расчёты доступны только при подключении к Supabase</p></div>';
+        return;
+      }
+      // Ensure materials are loaded for ingredient selectors
+      if (materials.length === 0) await loadMaterials();
+
+      try {
+        var { data, error } = await db.from('product_costs').select('*, product_cost_items(*)').order('created_at', { ascending: false });
+        if (error) throw error;
+        productCosts = data || [];
+      } catch(e) {
+        console.error('Costs load error:', e);
+        productCosts = [];
+      }
+      renderProductCosts();
+    }
+
+    function renderProductCosts() {
+      var container = document.getElementById('costsContainer');
+      var countEl = document.getElementById('costsCount');
+      countEl.textContent = productCosts.length + ' ' + pluralize(productCosts.length, 'расчёт', 'расчёта', 'расчётов');
+
+      if (productCosts.length === 0) {
+        container.innerHTML = '<div class="admin-empty"><div class="admin-empty-icon">&#128200;</div><p>Нет расчётов. Создайте первый.</p></div>';
+        return;
+      }
+
+      container.innerHTML = productCosts.map(function(pc) {
+        var items = pc.product_cost_items || [];
+        var materialsTotal = 0;
+        var rowsHtml = items.map(function(item) {
+          var mat = materials.find(function(m) { return m.id === item.material_id; });
+          var pricePerUnit = mat && mat.volume > 0 ? (mat.cost / mat.volume) : 0;
+          var itemCost = pricePerUnit * item.quantity;
+          materialsTotal += itemCost;
+          return '<tr>' +
+            '<td>' + escapeHtml(item.material_name) + '</td>' +
+            '<td>' + item.quantity + ' ' + escapeHtml(item.unit || '') + '</td>' +
+            '<td>' + pricePerUnit.toFixed(2) + ' руб.</td>' +
+            '<td style="font-weight:600;">' + itemCost.toFixed(2) + ' руб.</td>' +
+          '</tr>';
+        }).join('');
+
+        var costTotal = materialsTotal + (pc.labor_cost || 0);
+        var retailPrice = costTotal * (1 + (pc.markup || 0) / 100);
+
+        return '<div class="cost-card">' +
+          '<div class="cost-card-header">' +
+            '<h3>' + escapeHtml(pc.product_name) + '</h3>' +
+            '<div class="cost-card-actions">' +
+              '<button class="btn-edit" onclick="openEditCost(' + pc.id + ')">&#9998;</button> ' +
+              '<button class="btn-delete" onclick="deleteProductCost(' + pc.id + ')">&#10005;</button>' +
+            '</div>' +
+          '</div>' +
+          '<table>' +
+            '<thead><tr><th>Компонент</th><th>Расход</th><th>Цена за ед.</th><th>Стоимость</th></tr></thead>' +
+            '<tbody>' + rowsHtml + '</tbody>' +
+          '</table>' +
+          '<div class="cost-card-totals">' +
+            '<span>Материалы: <strong>' + materialsTotal.toFixed(2) + ' руб.</strong></span>' +
+            '<span>Работа: <strong>' + (pc.labor_cost || 0).toFixed(2) + ' руб.</strong></span>' +
+            '<span>Себестоимость: <strong>' + costTotal.toFixed(2) + ' руб.</strong></span>' +
+            '<span>Наценка: ' + (pc.markup || 0) + '%</span>' +
+            '<span>Цена: <strong style="font-size:1.1rem;">' + Math.round(retailPrice) + ' руб.</strong></span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function openCostForm() {
+      document.getElementById('costModalTitle').textContent = 'Расчёт себестоимости';
+      document.getElementById('costSubmitBtn').textContent = 'Сохранить';
+      document.getElementById('costForm').reset();
+      document.getElementById('costEditId').value = '';
+      document.getElementById('costLabor').value = '0';
+      document.getElementById('costMarkup').value = '100';
+      document.getElementById('costIngredients').innerHTML = '';
+      addCostIngredient();
+      recalcCost();
+      document.getElementById('costModalOverlay').classList.add('active');
+    }
+
+    function openEditCost(id) {
+      var pc = productCosts.find(function(x) { return x.id === id; });
+      if (!pc) return;
+      document.getElementById('costModalTitle').textContent = 'Редактировать расчёт';
+      document.getElementById('costSubmitBtn').textContent = 'Сохранить';
+      document.getElementById('costEditId').value = pc.id;
+      document.getElementById('costProductName').value = pc.product_name;
+      document.getElementById('costLabor').value = pc.labor_cost || 0;
+      document.getElementById('costMarkup').value = pc.markup || 0;
+
+      var container = document.getElementById('costIngredients');
+      container.innerHTML = '';
+      (pc.product_cost_items || []).forEach(function(item) {
+        addCostIngredient(item.material_id, item.quantity);
+      });
+      if ((pc.product_cost_items || []).length === 0) addCostIngredient();
+      recalcCost();
+      document.getElementById('costModalOverlay').classList.add('active');
+    }
+
+    function closeCostModal() {
+      document.getElementById('costModalOverlay').classList.remove('active');
+    }
+
+    function addCostIngredient(materialId, qty) {
+      var container = document.getElementById('costIngredients');
+      var row = document.createElement('div');
+      row.className = 'ingredient-row';
+
+      var options = '<option value="">-- Выберите --</option>' + materials.map(function(m) {
+        var sel = materialId && m.id === materialId ? ' selected' : '';
+        return '<option value="' + m.id + '"' + sel + '>' + escapeHtml(m.name) + ' (' + m.unit + ')</option>';
+      }).join('');
+
+      row.innerHTML =
+        '<select class="ing-material" onchange="recalcCost()">' + options + '</select>' +
+        '<input type="number" class="ing-qty" min="0" step="0.1" value="' + (qty || '') + '" placeholder="Кол-во" oninput="recalcCost()">' +
+        '<span class="ing-cost" style="font-size:0.85rem;font-weight:600;text-align:right;">0 р.</span>' +
+        '<button type="button" class="remove-ingredient" onclick="this.parentElement.remove();recalcCost()">&times;</button>';
+      container.appendChild(row);
+    }
+
+    function recalcCost() {
+      var rows = document.querySelectorAll('#costIngredients .ingredient-row');
+      var materialsTotal = 0;
+
+      rows.forEach(function(row) {
+        var matId = parseInt(row.querySelector('.ing-material').value);
+        var qty = parseFloat(row.querySelector('.ing-qty').value) || 0;
+        var costSpan = row.querySelector('.ing-cost');
+
+        if (matId && qty > 0) {
+          var mat = materials.find(function(m) { return m.id === matId; });
+          if (mat && mat.volume > 0) {
+            var itemCost = (mat.cost / mat.volume) * qty;
+            materialsTotal += itemCost;
+            costSpan.textContent = itemCost.toFixed(2) + ' р.';
+          } else {
+            costSpan.textContent = '0 р.';
+          }
+        } else {
+          costSpan.textContent = '0 р.';
+        }
+      });
+
+      var labor = parseFloat(document.getElementById('costLabor').value) || 0;
+      var markup = parseFloat(document.getElementById('costMarkup').value) || 0;
+      var total = materialsTotal + labor;
+      var retail = total * (1 + markup / 100);
+
+      document.getElementById('costMaterialsTotal').textContent = materialsTotal.toFixed(2) + ' руб.';
+      document.getElementById('costLaborTotal').textContent = labor.toFixed(2) + ' руб.';
+      document.getElementById('costTotal').textContent = total.toFixed(2) + ' руб.';
+      document.getElementById('costRetailPrice').textContent = Math.round(retail) + ' руб.';
+    }
+
+    async function handleCostSubmit(e) {
+      e.preventDefault();
+      var editId = document.getElementById('costEditId').value;
+      var productName = document.getElementById('costProductName').value.trim();
+      var labor = parseFloat(document.getElementById('costLabor').value) || 0;
+      var markup = parseFloat(document.getElementById('costMarkup').value) || 0;
+
+      // Collect ingredients
+      var ingredients = [];
+      document.querySelectorAll('#costIngredients .ingredient-row').forEach(function(row) {
+        var matId = parseInt(row.querySelector('.ing-material').value);
+        var qty = parseFloat(row.querySelector('.ing-qty').value) || 0;
+        if (matId && qty > 0) {
+          var mat = materials.find(function(m) { return m.id === matId; });
+          ingredients.push({
+            material_id: matId,
+            material_name: mat ? mat.name : '',
+            unit: mat ? mat.unit : '',
+            quantity: qty,
+          });
+        }
+      });
+
+      if (ingredients.length === 0) {
+        notify('Добавьте хотя бы один компонент', 'error');
+        return;
+      }
+
+      try {
+        if (editId) {
+          // Update product_costs row
+          var { error } = await db.from('product_costs').update({
+            product_name: productName,
+            labor_cost: labor,
+            markup: markup,
+          }).eq('id', parseInt(editId));
+          if (error) throw error;
+
+          // Delete old items, insert new
+          await db.from('product_cost_items').delete().eq('product_cost_id', parseInt(editId));
+          var items = ingredients.map(function(ing) {
+            return { product_cost_id: parseInt(editId), material_id: ing.material_id, material_name: ing.material_name, unit: ing.unit, quantity: ing.quantity };
+          });
+          var { error: err2 } = await db.from('product_cost_items').insert(items);
+          if (err2) throw err2;
+
+          notify('Расчёт обновлён');
+        } else {
+          // Insert new product_costs row
+          var { data: newCost, error } = await db.from('product_costs').insert({
+            product_name: productName,
+            labor_cost: labor,
+            markup: markup,
+          }).select().single();
+          if (error) throw error;
+
+          // Insert items
+          var items = ingredients.map(function(ing) {
+            return { product_cost_id: newCost.id, material_id: ing.material_id, material_name: ing.material_name, unit: ing.unit, quantity: ing.quantity };
+          });
+          var { error: err2 } = await db.from('product_cost_items').insert(items);
+          if (err2) throw err2;
+
+          notify('Расчёт сохранён');
+        }
+
+        closeCostModal();
+        await loadProductCosts();
+      } catch(err) {
+        console.error(err);
+        notify('Ошибка: ' + err.message, 'error');
+      }
+    }
+
+    async function deleteProductCost(id) {
+      if (!confirm('Удалить этот расчёт?')) return;
+      try {
+        await db.from('product_cost_items').delete().eq('product_cost_id', id);
+        var { error } = await db.from('product_costs').delete().eq('id', id);
+        if (error) throw error;
+        notify('Расчёт удалён');
+        await loadProductCosts();
+      } catch(e) {
+        notify('Ошибка: ' + e.message, 'error');
       }
     }
   </script>
