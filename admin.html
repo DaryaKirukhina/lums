@@ -1602,7 +1602,7 @@
       document.getElementById('materialForm').reset();
       document.getElementById('matEditId').value = '';
       document.getElementById('matPricePerUnit').textContent = '—';
-      document.getElementById('materialModalOverlay').classList.add('active');
+      document.getElementById('materialModalOverlay').classList.add('open');
     }
 
     function openEditMaterial(id) {
@@ -1617,11 +1617,11 @@
       document.getElementById('matVolume').value = m.volume;
       document.getElementById('matSupplier').value = m.supplier || '';
       calcMatPrice();
-      document.getElementById('materialModalOverlay').classList.add('active');
+      document.getElementById('materialModalOverlay').classList.add('open');
     }
 
     function closeMaterialModal() {
-      document.getElementById('materialModalOverlay').classList.remove('active');
+      document.getElementById('materialModalOverlay').classList.remove('open');
     }
 
     // Auto-calc price per unit
@@ -1761,7 +1761,7 @@
       document.getElementById('costIngredients').innerHTML = '';
       addCostIngredient();
       recalcCost();
-      document.getElementById('costModalOverlay').classList.add('active');
+      document.getElementById('costModalOverlay').classList.add('open');
     }
 
     function openEditCost(id) {
@@ -1781,11 +1781,11 @@
       });
       if ((pc.product_cost_items || []).length === 0) addCostIngredient();
       recalcCost();
-      document.getElementById('costModalOverlay').classList.add('active');
+      document.getElementById('costModalOverlay').classList.add('open');
     }
 
     function closeCostModal() {
-      document.getElementById('costModalOverlay').classList.remove('active');
+      document.getElementById('costModalOverlay').classList.remove('open');
     }
 
     function addCostIngredient(materialId, qty) {
