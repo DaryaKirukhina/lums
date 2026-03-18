@@ -6,6 +6,7 @@
   <title>ЛЮМС — Админ-панель</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
   <style>
     /* --- Admin Layout --- */
     .admin-header {
@@ -206,6 +207,45 @@
       max-height: 90vh;
       overflow-y: auto;
       box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    }
+    /* Cropper modal */
+    .cropper-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 1100;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .cropper-modal-overlay.open {
+      display: flex;
+    }
+    .cropper-modal {
+      background: var(--vanilla);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 700px;
+      padding: 24px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+    }
+    .cropper-modal h3 {
+      margin-bottom: 16px;
+    }
+    .cropper-container-wrapper {
+      max-height: 500px;
+      overflow: hidden;
+    }
+    .cropper-container-wrapper img {
+      max-width: 100%;
+      display: block;
+    }
+    .cropper-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 16px;
     }
     .modal-header {
       display: flex;
@@ -889,7 +929,7 @@
 
           <div class="form-group">
             <label for="fimage">Фото товара (можно выбрать несколько)</label>
-            <input type="file" id="fimage" accept="image/*" multiple style="padding:8px;border:2px dashed rgba(0,0,0,0.15);border-radius:var(--radius);cursor:pointer;">
+            <input type="file" id="fimage" accept="image/*" multiple style="padding:8px;border:2px dashed rgba(0,0,0,0.15);border-radius:var(--radius);cursor:pointer;" onchange="if(this.files.length)openCropperForFiles(this.files)">
             <div id="imagePreview" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;"></div>
             <input type="hidden" id="fimage_url">
             <input type="hidden" id="fimages" value="[]">
@@ -904,12 +944,27 @@
     </div>
   </div>
 
+  <!-- Cropper Modal -->
+  <div class="cropper-modal-overlay" id="cropperModalOverlay" onclick="if(event.target===this)cancelCrop()">
+    <div class="cropper-modal">
+      <h3>Обрезать фото</h3>
+      <div class="cropper-container-wrapper">
+        <img id="cropperImage" src="">
+      </div>
+      <div class="cropper-actions">
+        <button type="button" class="btn btn-outline btn-sm" onclick="cancelCrop()">Отмена</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="applyCrop()">Обрезать и добавить</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Notification -->
   <div class="admin-notification" id="adminNotification"></div>
 
   </div><!-- /adminPanel -->
 
   <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
   <script src="js/supabase.js"></script>
@@ -921,6 +976,82 @@
     const STORAGE_KEY = 'lums_products_local';
     let products = [];
     let isSupabaseConnected = false;
+
+    // --- Cropper ---
+    let cropperInstance = null;
+    let cropperQueue = []; // files waiting to be cropped
+    let croppedFiles = []; // results after cropping
+
+    function openCropperForFiles(files) {
+      cropperQueue = Array.from(files);
+      croppedFiles = [];
+      processNextCrop();
+    }
+
+    function processNextCrop() {
+      if (cropperQueue.length === 0) {
+        // All done — update preview and store cropped files
+        updateImagePreview();
+        document.getElementById('cropperModalOverlay').classList.remove('open');
+        return;
+      }
+      var file = cropperQueue.shift();
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = document.getElementById('cropperImage');
+        img.src = e.target.result;
+        document.getElementById('cropperModalOverlay').classList.add('open');
+        if (cropperInstance) {
+          cropperInstance.destroy();
+        }
+        setTimeout(function() {
+          cropperInstance = new Cropper(img, {
+            aspectRatio: 1,
+            viewMode: 1,
+            autoCropArea: 0.9,
+            responsive: true,
+            background: false,
+          });
+        }, 100);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function applyCrop() {
+      if (!cropperInstance) return;
+      var canvas = cropperInstance.getCroppedCanvas({
+        width: 800,
+        height: 800,
+        imageSmoothingQuality: 'high',
+      });
+      canvas.toBlob(function(blob) {
+        var croppedFile = new File([blob], 'cropped_' + Date.now() + '.jpg', { type: 'image/jpeg' });
+        croppedFiles.push(croppedFile);
+        cropperInstance.destroy();
+        cropperInstance = null;
+        processNextCrop();
+      }, 'image/jpeg', 0.9);
+    }
+
+    function cancelCrop() {
+      if (cropperInstance) {
+        cropperInstance.destroy();
+        cropperInstance = null;
+      }
+      cropperQueue = [];
+      document.getElementById('cropperModalOverlay').classList.remove('open');
+    }
+
+    function updateImagePreview() {
+      var preview = document.getElementById('imagePreview');
+      croppedFiles.forEach(function(file) {
+        var url = URL.createObjectURL(file);
+        var div = document.createElement('div');
+        div.style.cssText = 'width:60px;height:60px;border-radius:8px;overflow:hidden;position:relative;';
+        div.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;">';
+        preview.appendChild(div);
+      });
+    }
 
     // --- Auth ---
     async function handleLogin(e) {
@@ -1122,6 +1253,7 @@
       document.getElementById('fimages').value = '[]';
       document.getElementById('modalTitle').textContent = 'Добавить товар';
       document.getElementById('submitBtn').textContent = 'Добавить';
+      croppedFiles = [];
       document.getElementById('modalOverlay').classList.add('open');
     }
 
@@ -1153,6 +1285,7 @@
       }
       document.getElementById('modalTitle').textContent = 'Редактировать товар';
       document.getElementById('submitBtn').textContent = 'Сохранить';
+      croppedFiles = [];
       document.getElementById('modalOverlay').classList.add('open');
     }
 
@@ -1174,11 +1307,11 @@
       let imagesArr = [];
       try { imagesArr = JSON.parse(document.getElementById('fimages').value || '[]'); } catch(e) {}
 
-      if (fileInput.files.length > 0) {
+      if (croppedFiles.length > 0) {
         submitBtn.textContent = 'Загрузка фото...';
         const uploadedUrls = [];
-        for (let i = 0; i < fileInput.files.length; i++) {
-          const uploaded = await uploadProductImage(fileInput.files[i]);
+        for (let i = 0; i < croppedFiles.length; i++) {
+          const uploaded = await uploadProductImage(croppedFiles[i]);
           if (uploaded) {
             uploadedUrls.push(uploaded);
           } else if (isSupabaseConnected) {
